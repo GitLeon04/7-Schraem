@@ -10,7 +10,6 @@ const deathSounds = [
   'taco-bell-bong-sfx.mp3',
   'aughhhhh-aughhhhh.mp3',
   'better-call-saul-intro.mp3',
-  'heheheha.mp3',
   'pimtopimati.mp3'
 
 
