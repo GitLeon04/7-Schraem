@@ -11,7 +11,7 @@ const deathSounds = [
   'aughhhhh-aughhhhh.mp3',
   'better-call-saul-intro.mp3',
   'heheheha.mp3',
-  'original sound - jizzkoenig_1746485857_musicaldown.com.mp3'
+  'pimtopimati.mp3'
 
 
 ];
