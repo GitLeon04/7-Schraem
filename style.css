@@ -7,46 +7,52 @@
   --warning: #ffe066;
 }
 
+/* Reset */
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
+/* Base layout */
 body {
   font-family: 'Segoe UI', sans-serif;
   padding: 20px;
   background-color: var(--bg-dark);
   color: var(--text);
-  margin: 0;
+  font-size: 16px;
 }
 
+/* Headline */
 h1 {
   margin-bottom: 20px;
   color: var(--accent);
-  font-size: 2.2rem;
+  font-size: 2rem;
   text-align: center;
 }
 
+/* Form elements */
 input {
-  margin: 8px 8px 8px 0;
-  padding: 14px;
+  margin: 6px 6px 6px 0;
+  padding: 10px;
   background-color: var(--card-dark);
   border: 1px solid #333;
   color: var(--text);
   border-radius: 5px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   max-width: 100%;
 }
 
 button {
-  margin: 8px 6px 8px 0;
-  padding: 14px 20px;
+  margin: 6px 4px 6px 0;
+  padding: 10px 14px;
   background-color: var(--card-dark);
   color: var(--text);
   border: 1px solid var(--accent);
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 button:hover {
@@ -54,18 +60,19 @@ button:hover {
   color: var(--bg-dark);
 }
 
+/* Spielerbox */
 #players {
   margin-top: 20px;
 }
 
 .player {
-  padding: 14px;
-  margin: 14px 0;
+  padding: 12px;
+  margin: 12px 0;
   background-color: var(--card-dark);
   border-left: 4px solid var(--accent);
   border-radius: 5px;
   word-break: break-word;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .player.eliminated {
@@ -78,6 +85,7 @@ button:hover {
   color: black;
 }
 
+/* Gewinner-Anzeige */
 #winner {
   margin-top: 20px;
   padding: 15px;
@@ -85,52 +93,66 @@ button:hover {
   color: white;
   border-radius: 5px;
   text-align: center;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
 }
 
+/* Preset Buttons */
 #preset-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
+/* Footer */
 footer {
   margin-top: 40px;
   padding-top: 10px;
-  font-size: 1rem;
+  font-size: 0.85rem;
   text-align: center;
   color: #8892b0;
   border-top: 1px solid #233554;
 }
 
-/* Mobil: alles einfach größer und gestapelt */
+/* ------------------- */
+/* 📱 Mobile Optimiert */
+/* ------------------- */
 @media screen and (max-width: 768px) {
-  .player {
-    font-size: 1.4rem;
+  body {
+    font-size: 20px;
+    padding: 16px;
   }
 
-  .player button {
-    width: 100%;
-    margin: 6px 0;
-    font-size: 1.4rem;
-    padding: 16px;
+  h1 {
+    font-size: 2.4rem;
   }
 
   input,
   button {
     width: 100%;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
+    padding: 16px;
   }
 
-  h1 {
-    font-size: 2rem;
+  .player {
+    font-size: 1.6rem;
+  }
+
+  .player button {
+    width: 100%;
+    font-size: 1.6rem;
+    padding: 16px;
+    margin: 6px 0;
+  }
+
+  #winner {
+    font-size: 1.6rem;
   }
 
   #preset-buttons {
     flex-direction: column;
   }
 
-  #winner {
-    font-size: 1.4rem;
+  footer {
+    font-size: 1rem;
   }
 }
