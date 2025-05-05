@@ -10,7 +10,7 @@
   <h1>7 Schrämm Tracker</h1>
 
   <div id="setup-form">
-    <input type="number" id="global-bet" placeholder="Einsatz pro Spieler (€)" step="0.01">
+    <input type="number" id="global-bet" placeholder="Einsatz pro Spieler (€)" step="0.01" min="0">
     <button onclick="setBet()">Einsatz festlegen</button>
   </div>
 
@@ -21,12 +21,12 @@
 
   <div id="preset-buttons" style="display: none; margin-top: 10px;">
     <p>Vorschläge:</p>
-    <button onclick="addPresetPlayer('Leon')">Flaschko</button>
-    <button onclick="addPresetPlayer('Philipp')">Eckmann</button>
-    <button onclick="addPresetPlayer('Lukas')">Ansgar</button>
-    <button onclick="addPresetPlayer('Ilke')">Ilkcross</button>
+    <button onclick="addPresetPlayer('Flaschko')">Flaschko</button>
+    <button onclick="addPresetPlayer('Eckmann')">Eckmann</button>
+    <button onclick="addPresetPlayer('Ansgar')">Ansgar</button>
+    <button onclick="addPresetPlayer('Ilkcross')">Ilkcross</button>
     <button onclick="addPresetPlayer('Tolj')">Tolj</button>
-    <button onclick="addPresetPlayer('Tim')">Titan</button>
+    <button onclick="addPresetPlayer('Titan')">Titan</button>
   </div>
 
   <div id="players"></div>

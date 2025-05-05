@@ -131,3 +131,16 @@ footer {
     margin: 4px 0;
   }
 }
+
+
+/* Spinner bei Number-Input ausblenden (Chrome, Safari, Edge) */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Für Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}

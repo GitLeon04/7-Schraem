@@ -1,5 +1,5 @@
 let players = [];
-let globalBet = 0.5;
+let globalBet = 2;
 
 const deathSounds = [
   "vine-boom.mp3",
@@ -68,17 +68,27 @@ function playRandomDeathSound() {
 
 function setBet() {
   const betInput = document.getElementById('global-bet');
-  const bet = parseFloat(betInput.value);
-  if (!isNaN(bet) && bet > 0) {
-    globalBet = bet;
+  const raw = betInput.value.trim();
+
+  // Fallback auf 0.5, wenn leer oder ungültig
+  const bet = raw === '' ? 2 : parseFloat(raw);
+
+  if (isNaN(bet) || bet <= 0) {
+    alert("Bitte gib einen gültigen Einsatz größer als 0 ein.");
+    return;
   }
+
+  globalBet = bet;
 
   document.getElementById('player-form').style.display = 'block';
   document.getElementById('preset-buttons').style.display = 'block';
   document.getElementById('setup-form').style.display = 'none';
+
   renderPlayers();
   saveState();
 }
+
+
 
 function addPlayer() {
   const nameInput = document.getElementById('player-name');
