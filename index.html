@@ -5,42 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>7‑Schräm</title>
 
-  <!-- Favicon -->
+  <!-- Favicon und Stylesheet -->
   <link rel="icon" href="favicon.ico" type="image/x-icon">
-
-  <!-- Externes Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+  <!-- Überschrift -->
   <h1>7‑Schräm</h1>
 
-  <!-- Einsatz je Spieler -->
+  <!-- Einsatz pro Spieler festlegen -->
   <section id="setup-form">
-    <input type="number" id="global-bet"
-           placeholder="Einsatz pro Spieler (€)"
-           min="0.01" step="0.01">
+    <input
+      type="number"
+      id="global-bet"
+      placeholder="Einsatz pro Spieler (€)"
+      min="0.01"
+      step="0.01"
+    >
     <button id="set-bet-button">Einsatz festlegen</button>
   </section>
 
-  <!-- Spielerliste hinzufügen -->
-  <section id="player-form" hidden>
-    <input type="text" id="player-name" placeholder="Spielername">
-    <button id="add-player-button">Spieler hinzufügen</button>
-  </section>
+  <!-- Aufklapp‑Schalter -->
+  <button id="toggle-player-ui" hidden>Aufklappen ▼</button>
 
-  <!-- Namensvorschläge -->
-  <section id="preset-buttons" hidden>
-    <p>Vorschläge:</p>
-    <button class="preset-player" data-name="Flaschko">Flaschko</button>
-    <button class="preset-player" data-name="Eckmann">Eckmann</button>
-    <button class="preset-player" data-name="Ansgar">Ansgar</button>
-    <button class="preset-player" data-name="Ilkcross">Ilkcross</button>
-    <button class="preset-player" data-name="Tolj">Tolj</button>
-    <button class="preset-player" data-name="Titan">Titan</button>
-  </section>
+  <!-- Spielername‑Eingabe + Namensvorschläge -->
+  <div id="player-ui" hidden>
 
-  <!-- Aktive Spieler werden per JS eingefügt -->
+    <!-- Individuelle Namen -->
+    <section id="player-form">
+      <input type="text" id="player-name" placeholder="Spielername">
+      <button id="add-player-button">Spieler hinzufügen</button>
+    </section>
+
+    <!-- Schnellvorschläge -->
+    <section id="preset-buttons">
+      <p>Vorschläge:</p>
+      <button class="preset-player" data-name="Flaschko">Flaschko</button>
+      <button class="preset-player" data-name="Eckmann">Eckmann</button>
+      <button class="preset-player" data-name="Ansgar">Ansgar</button>
+      <button class="preset-player" data-name="Ilkcross">Ilkcross</button>
+      <button class="preset-player" data-name="Tolj">Tolj</button>
+      <button class="preset-player" data-name="Titan">Titan</button>
+    </section>
+  </div>
+
+  <!-- Dynamisch generierte Spielerliste -->
   <div id="players"></div>
 
   <!-- Steuerbuttons -->
@@ -50,12 +60,13 @@
   <!-- Gewinneranzeige -->
   <div id="winner" hidden></div>
 
+  <!-- Fußbereich -->
   <footer>
     <p>Dies ist ein rein privates Projekt für den nicht kommerziellen Gebrauch im Freundeskreis.</p>
     <p>Made by Ansgar &amp; Flaschko &amp; Eckmann</p>
   </footer>
 
-  <!-- Logik -->
+  <!-- Hauptlogik -->
   <script src="script.js"></script>
 </body>
 </html>

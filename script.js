@@ -1,26 +1,32 @@
-let players = [];
+/* ------------------------------------------------------------------
+   Globale Variablen und Daten
+------------------------------------------------------------------ */
+let players   = [];
 let globalBet = 2.0;
 
 const deathSounds = [
-  "vine-boom.mp3",
-  "metal-pipe-clang.mp3",
-  "taco-bell-bong-sfx.mp3",
-  "aughhhhh-aughhhhh.mp3",
-  "better-call-saul-intro.mp3",
-  "heheheha.mp3"
+  'vine-boom.mp3',
+  'metal-pipe-clang.mp3',
+  'taco-bell-bong-sfx.mp3',
+  'aughhhhh-aughhhhh.mp3',
+  'better-call-saul-intro.mp3',
+  'heheheha.mp3'
 ];
 
 const nicknames = {
-  "Leon": "Flaschko",
-  "Philipp": "Eckmann",
-  "Lukas": "Ansgar",
-  "Ilke": "Ilkcross",
-  "Leon2": "Tolj",
-  "Tim": "Titan"
+  Leon:   'Flaschko',
+  Philipp:'Eckmann',
+  Lukas:  'Ansgar',
+  Ilke:   'Ilkcross',
+  Leon2:  'Tolj',
+  Tim:    'Titan'
 };
 
 let currentAudio = null;
 
+/* ------------------------------------------------------------------
+   Audio
+------------------------------------------------------------------ */
 function playRandomDeathSound() {
   const file = deathSounds[Math.floor(Math.random() * deathSounds.length)];
   if (currentAudio && !currentAudio.paused) {
@@ -31,56 +37,59 @@ function playRandomDeathSound() {
   currentAudio.play();
 }
 
+/* ------------------------------------------------------------------
+   Local‑Storage
+------------------------------------------------------------------ */
 function saveState() {
-  localStorage.setItem("lifetracker-state", JSON.stringify({ players, globalBet }));
+  localStorage.setItem(
+    'lifetracker-state',
+    JSON.stringify({ players, globalBet })
+  );
 }
 
 function loadState() {
-  const saved = localStorage.getItem("lifetracker-state");
+  const saved = localStorage.getItem('lifetracker-state');
   if (!saved) return;
-  const data = JSON.parse(saved);
-  players = data.players || [];
-  globalBet = data.globalBet || 2.0;
+  const data   = JSON.parse(saved);
+  players      = data.players   || [];
+  globalBet    = data.globalBet || 2.0;
   showPlayerForm();
   renderPlayers();
 }
 
-function resetGame() {
-  if (!confirm("Willst du wirklich alles löschen?")) return;
-  localStorage.removeItem("lifetracker-state");
-  players = [];
-  globalBet = 2.0;
-  document.getElementById('players').innerHTML = '';
-  document.getElementById('winner').style.display = 'none';
-  hidePlayerForm();
-  document.getElementById('global-bet').value = '';
-}
-
+/* ------------------------------------------------------------------
+   Einsatz festlegen
+------------------------------------------------------------------ */
 function setBet() {
-  const betInput = document.getElementById('global-bet');
-  const raw = betInput.value.trim();
-  const bet = raw === '' ? 2.0 : parseFloat(raw);
+  const input = document.getElementById('global-bet');
+  const raw   = input.value.trim();
+  const bet   = raw === '' ? 2.0 : parseFloat(raw);
+
   if (isNaN(bet) || bet <= 0) {
-    betInput.classList.add("invalid");
+    input.classList.add('invalid');
     return;
   }
-  betInput.classList.remove("invalid");
+  input.classList.remove('invalid');
   globalBet = bet;
   showPlayerForm();
   renderPlayers();
   saveState();
 }
 
+/* ------------------------------------------------------------------
+   Spieler hinzufügen / entfernen
+------------------------------------------------------------------ */
 function addPlayer() {
-  const nameInput = document.getElementById('player-name');
-  const name = nameInput.value.trim();
+  const input = document.getElementById('player-name');
+  const name  = input.value.trim();
+
   if (!name || players.some(p => p.name === name)) {
-    nameInput.classList.add("invalid");
+    input.classList.add('invalid');
     return;
   }
-  nameInput.classList.remove("invalid");
+  input.classList.remove('invalid');
   createPlayer(name);
-  nameInput.value = '';
+  input.value = '';
 }
 
 function createPlayer(name) {
@@ -90,16 +99,34 @@ function createPlayer(name) {
     displayName: `${nickname} ${name}`.trim(),
     life: 7,
     eliminated: false,
-    balance: 0
+    balance: 0,
+    lastAction: null
   });
   renderPlayers();
   saveState();
 }
 
+function removePlayer(player) {
+  players = players.filter(p => p.name !== player.name);
+  document.getElementById('winner').hidden = true;
+  renderPlayers();
+  saveState();
+}
+
+function getPlayerByName(name) {
+  return players.find(p => p.name === name);
+}
+
+/* ------------------------------------------------------------------
+   Leben verändern
+------------------------------------------------------------------ */
 function subtractLife(player, amount = 1) {
   if (player.eliminated) return;
-  player.life = Math.max(0, player.life - amount);
-  if (player.life === 0 && !player.eliminated) {
+
+  player.life       = Math.max(0, player.life - amount);
+  player.lastAction = `-${amount}`;
+
+  if (player.life === 0) {
     player.eliminated = true;
     playRandomDeathSound();
   }
@@ -110,76 +137,32 @@ function subtractLife(player, amount = 1) {
 
 function addLife(player) {
   if (player.eliminated || player.life >= 7) return;
+
   player.life++;
+  player.lastAction = '+1';
   renderPlayers();
   saveState();
 }
 
-function removePlayer(player) {
-  players = players.filter(p => p.name !== player.name);
-  document.getElementById('winner').style.display = 'none';
-  renderPlayers();
-  saveState();
-}
-
-function getPlayerByName(name) {
-  return players.find(p => p.name === name);
-}
-
-function renderPlayers() {
-  const container = document.getElementById('players');
-  container.innerHTML = '';
-
-  players
-    .slice()
-    .sort((a, b) => a.eliminated - b.eliminated)
-    .forEach((player) => {
-      const buttons = [];
-
-      for (let i = 1; i <= 7; i++) {
-        buttons.push(`<button data-action="subtract" data-name="${player.name}" data-amount="${i}">-${i}</button>`);
-      }
-
-      buttons.push(`<button data-action="add" data-name="${player.name}">+1</button>`);
-      buttons.push(`<button data-action="remove" data-name="${player.name}">Entfernen</button>`);
-
-      let playerClass = 'player';
-      if (player.eliminated) playerClass += ' eliminated';
-      else if (player.life === 1) playerClass += ' warning';
-
-      const playerDiv = document.createElement('div');
-      playerDiv.className = playerClass;
-      playerDiv.innerHTML = `
-        <strong>${player.displayName}</strong> |
-        Leben: ${player.life} |
-        Kontostand: ${player.balance >= 0 ? '+' : ''}€${player.balance.toFixed(2)}<br>
-        ${!player.eliminated ? buttons.join(' ') : ' (eliminiert)'}
-      `;
-      container.appendChild(playerDiv);
-    });
-
-  const hasPlayers = players.length > 0;
-  document.getElementById('restart-button').style.display = hasPlayers ? 'inline-block' : 'none';
-  document.getElementById('reset-button').style.display = hasPlayers ? 'inline-block' : 'none';
-}
-
+/* ------------------------------------------------------------------
+   Gewinner prüfen
+------------------------------------------------------------------ */
 function checkWinner() {
   const alive = players.filter(p => !p.eliminated);
   if (alive.length !== 1) return;
 
-  const winner = alive[0];
+  const winner      = alive[0];
   const winnerIndex = players.findIndex(p => p.name === winner.name);
-  const totalPot = globalBet * (players.length - 1);
+  const totalPot    = globalBet * (players.length - 1);
 
   players.forEach((p, i) => {
     if (i !== winnerIndex) p.balance -= globalBet;
   });
-
   players[winnerIndex].balance += totalPot;
 
-  const winnerDiv = document.getElementById('winner');
-  winnerDiv.style.display = 'block';
-  winnerDiv.innerHTML = `
+  const div = document.getElementById('winner');
+  div.hidden = false;
+  div.innerHTML = `
     <h2>Gewinner: ${winner.displayName}</h2>
     <p>Er gewinnt €${totalPot.toFixed(2)} (Einsatz aller anderen Spieler)</p>
   `;
@@ -188,53 +171,138 @@ function checkWinner() {
   saveState();
 }
 
+/* ------------------------------------------------------------------
+   Neustart & Reset
+------------------------------------------------------------------ */
 function restartGame() {
-  if (!confirm("Spiel wirklich neu starten?")) return;
+  if (!confirm('Spiel wirklich neu starten?')) return;
+
   players.forEach(p => {
-    p.life = 7;
+    p.life       = 7;
     p.eliminated = false;
+    p.lastAction = null;
   });
-  document.getElementById('winner').style.display = 'none';
+  document.getElementById('winner').hidden = true;
   renderPlayers();
   saveState();
 }
 
+function resetGame() {
+  if (!confirm('Willst du wirklich alles löschen?')) return;
+
+  localStorage.removeItem('lifetracker-state');
+  players   = [];
+  globalBet = 2.0;
+
+  document.getElementById('players').innerHTML = '';
+  document.getElementById('winner').hidden      = true;
+  document.getElementById('restart-button').hidden = true;
+  document.getElementById('reset-button').hidden   = true;
+  hidePlayerForm();
+  document.getElementById('global-bet').value   = '';
+}
+
+/* ------------------------------------------------------------------
+   Rendering
+------------------------------------------------------------------ */
+function renderPlayers() {
+  const container = document.getElementById('players');
+  container.innerHTML = '';
+
+  players
+    .slice()
+    .sort((a, b) => a.eliminated - b.eliminated)
+    .forEach(player => {
+      const buttons = [];
+
+      for (let i = 1; i <= 7; i++) {
+        const active = player.lastAction === `-${i}` ? ' active' : '';
+        buttons.push(
+          `<button class="life-btn${active}" data-action="subtract" data-name="${player.name}" data-amount="${i}">-${i}</button>`
+        );
+      }
+
+      const addActive = player.lastAction === '+1' ? ' active' : '';
+      buttons.push(
+        `<button class="life-btn${addActive}" data-action="add" data-name="${player.name}">+1</button>`
+      );
+
+      buttons.push(
+        `<button data-action="remove" data-name="${player.name}">Entfernen</button>`
+      );
+
+      let classes = 'player';
+      if (player.eliminated) classes += ' eliminated';
+      else if (player.life === 1) classes += ' warning';
+
+      const div = document.createElement('div');
+      div.className = classes;
+      div.innerHTML = `
+        <strong>${player.displayName}</strong> |
+        Leben: ${player.life} |
+        Kontostand: ${player.balance >= 0 ? '+' : ''}€${player.balance.toFixed(2)}<br>
+        ${player.eliminated ? '(eliminiert)' : buttons.join(' ')}
+      `;
+      container.appendChild(div);
+    });
+
+  const any = players.length > 0;
+  document.getElementById('restart-button').hidden = !any;
+  document.getElementById('reset-button').hidden   = !any;
+}
+
+/* ------------------------------------------------------------------
+   Ein-/Ausklapp‑UI
+------------------------------------------------------------------ */
+const toggleBtn   = document.getElementById('toggle-player-ui');
+const playerUIBox = document.getElementById('player-ui');
+
+if (toggleBtn) {
+  toggleBtn.addEventListener('click', () => {
+    playerUIBox.hidden = !playerUIBox.hidden;
+    toggleBtn.textContent = playerUIBox.hidden
+      ? 'Aufklappen ▼'
+      : 'Aufklappen ▲';
+  });
+}
+
 function showPlayerForm() {
   document.getElementById('setup-form').style.display = 'none';
-  document.getElementById('player-form').style.display = 'block';
-  document.getElementById('preset-buttons').style.display = 'block';
+  toggleBtn.hidden   = false;
+  playerUIBox.hidden = false;
 }
 
 function hidePlayerForm() {
-  document.getElementById('player-form').style.display = 'none';
-  document.getElementById('preset-buttons').style.display = 'none';
+  toggleBtn.hidden   = true;
+  playerUIBox.hidden = true;
   document.getElementById('setup-form').style.display = 'block';
 }
 
-// Event Listeners
+/* ------------------------------------------------------------------
+   Initialisierung
+------------------------------------------------------------------ */
 window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('set-bet-button').addEventListener('click', setBet);
+  document.getElementById('set-bet-button' ).addEventListener('click', setBet);
   document.getElementById('add-player-button').addEventListener('click', addPlayer);
-  document.getElementById('restart-button').addEventListener('click', restartGame);
-  document.getElementById('reset-button').addEventListener('click', resetGame);
+  document.getElementById('restart-button'   ).addEventListener('click', restartGame);
+  document.getElementById('reset-button'     ).addEventListener('click', resetGame);
 
   document.querySelectorAll('.preset-player').forEach(btn => {
     btn.addEventListener('click', () => createPlayer(btn.dataset.name));
   });
 
-  document.getElementById('players').addEventListener('click', (e) => {
+  document.getElementById('players').addEventListener('click', e => {
     const btn = e.target;
     if (!btn.dataset.action) return;
 
-    const name = btn.dataset.name;
-    const player = getPlayerByName(name);
+    const player = getPlayerByName(btn.dataset.name);
     if (!player) return;
 
-    if (btn.dataset.action === "subtract") {
-      subtractLife(player, parseInt(btn.dataset.amount));
-    } else if (btn.dataset.action === "add") {
+    if (btn.dataset.action === 'subtract') {
+      subtractLife(player, parseInt(btn.dataset.amount, 10));
+    } else if (btn.dataset.action === 'add') {
       addLife(player);
-    } else if (btn.dataset.action === "remove") {
+    } else if (btn.dataset.action === 'remove') {
       removePlayer(player);
     }
   });
