@@ -93,6 +93,9 @@ function addPlayer() {
 }
 
 function createPlayer(name) {
+  /* Doppelten Spieler überspringen (gilt auch für Vorschläge) */
+  if (players.some(p => p.name === name)) return;
+
   const nickname = nicknames[name] || '';
   players.push({
     name,
