@@ -2,45 +2,60 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>7-Schräm</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>7‑Schräm</title>
+
+  <!-- Favicon -->
   <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+  <!-- Externes Stylesheet -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>7-Schräm</h1>
 
-  <div id="setup-form">
-    <input type="number" id="global-bet" placeholder="Einsatz pro Spieler (€)" min="0">
-    <button onclick="setBet()">Einsatz festlegen</button>
-  </div>
+  <h1>7‑Schräm</h1>
 
-  <div id="player-form" style="display: none;">
+  <!-- Einsatz je Spieler -->
+  <section id="setup-form">
+    <input type="number" id="global-bet"
+           placeholder="Einsatz pro Spieler (€)"
+           min="0.01" step="0.01">
+    <button id="set-bet-button">Einsatz festlegen</button>
+  </section>
+
+  <!-- Spielerliste hinzufügen -->
+  <section id="player-form" hidden>
     <input type="text" id="player-name" placeholder="Spielername">
-    <button onclick="addPlayer()">Spieler hinzufügen</button>
-  </div>
+    <button id="add-player-button">Spieler hinzufügen</button>
+  </section>
 
-  <div id="preset-buttons" style="display: none; margin-top: 10px;">
+  <!-- Namensvorschläge -->
+  <section id="preset-buttons" hidden>
     <p>Vorschläge:</p>
-    <button onclick="addPresetPlayer('Flaschko')">Flaschko</button>
-    <button onclick="addPresetPlayer('Eckmann')">Eckmann</button>
-    <button onclick="addPresetPlayer('Ansgar')">Ansgar</button>
-    <button onclick="addPresetPlayer('Ilkcross')">Ilkcross</button>
-    <button onclick="addPresetPlayer('Tolj')">Tolj</button>
-    <button onclick="addPresetPlayer('Titan')">Titan</button>
-  </div>
+    <button class="preset-player" data-name="Flaschko">Flaschko</button>
+    <button class="preset-player" data-name="Eckmann">Eckmann</button>
+    <button class="preset-player" data-name="Ansgar">Ansgar</button>
+    <button class="preset-player" data-name="Ilkcross">Ilkcross</button>
+    <button class="preset-player" data-name="Tolj">Tolj</button>
+    <button class="preset-player" data-name="Titan">Titan</button>
+  </section>
 
+  <!-- Aktive Spieler werden per JS eingefügt -->
   <div id="players"></div>
 
-  <button onclick="restartGame()" id="restart-button" style="display: none;">Neustart</button>
-  <button onclick="resetGame()" id="reset-button" style="display: none;">Reset (alles löschen)</button>
+  <!-- Steuerbuttons -->
+  <button id="restart-button" hidden>Neustart</button>
+  <button id="reset-button" hidden>Reset (alles löschen)</button>
 
-  <div id="winner" style="display: none;"></div>
+  <!-- Gewinneranzeige -->
+  <div id="winner" hidden></div>
 
   <footer>
-    <p>Dies ist ein rein privates Projekt für den nicht-kommerziellen Gebrauch im Freundeskreis.</p>
-    <p>Made by Lukas & Leon</p>
+    <p>Dies ist ein rein privates Projekt für den nicht kommerziellen Gebrauch im Freundeskreis.</p>
+    <p>Made by Ansgar &amp; Flaschko &amp; Eckmann</p>
   </footer>
 
+  <!-- Logik -->
   <script src="script.js"></script>
 </body>
 </html>

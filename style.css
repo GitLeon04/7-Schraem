@@ -7,68 +7,96 @@
   --warning: #ffe066;
 }
 
-/* Reset */
+/* Grundreset */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* Base layout */
 body {
   font-family: 'Segoe UI', sans-serif;
-  padding: 20px;
-  background-color: var(--bg-dark);
+  background: var(--bg-dark);
   color: var(--text);
   font-size: 16px;
+  line-height: 1.4;
+  padding: 12px;
 }
 
-/* Headline */
+/* Überschrift */
 h1 {
-  margin-bottom: 20px;
-  color: var(--accent);
-  font-size: 2rem;
   text-align: center;
+  color: var(--accent);
+  font-size: 1.75rem;
+  margin-bottom: 20px;
 }
 
-/* Form elements */
-input {
-  margin: 6px 6px 6px 0;
-  padding: 10px;
-  background-color: var(--card-dark);
-  border: 1px solid #333;
-  color: var(--text);
-  border-radius: 5px;
+/* Inputs und Buttons */
+input,
+button {
   font-size: 1rem;
+  padding: 10px;
+  border-radius: 5px;
   max-width: 100%;
 }
 
+input {
+  background: var(--card-dark);
+  border: 1px solid #333;
+  color: var(--text);
+  margin: 6px 6px 6px 0;
+}
+
+input.invalid {
+  border-color: var(--danger);
+}
+
 button {
-  margin: 6px 4px 6px 0;
-  padding: 10px 14px;
-  background-color: var(--card-dark);
+  background: var(--card-dark);
   color: var(--text);
   border: 1px solid var(--accent);
-  border-radius: 5px;
+  margin: 6px 4px 6px 0;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 1rem;
 }
 
 button:hover {
-  background-color: var(--accent);
+  background: var(--accent);
   color: var(--bg-dark);
 }
 
-/* Spielerbox */
+/* Vorschläge‑Bereich */
+#preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0 20px;
+  align-items: flex-start;
+}
+
+#preset-buttons > p {
+  flex: 0 0 100%;
+  margin: 0;
+  font-weight: 600;
+}
+
+#preset-buttons .preset-player {
+  flex: 1 1 calc(33.333% - 10px);   /* drei Spalten */
+  text-align: center;
+  padding: 8px 0;
+}
+
+/* Spielercontainer */
 #players {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-top: 20px;
 }
 
 .player {
   padding: 12px;
-  margin: 12px 0;
-  background-color: var(--card-dark);
+  background: var(--card-dark);
   border-left: 4px solid var(--accent);
   border-radius: 5px;
   word-break: break-word;
@@ -76,31 +104,24 @@ button:hover {
 }
 
 .player.eliminated {
-  background-color: var(--danger);
+  background: var(--danger);
   text-decoration: line-through;
 }
 
 .player.warning {
-  background-color: var(--warning);
-  color: black;
+  background: var(--warning);
+  color: #000;
 }
 
-/* Gewinner-Anzeige */
+/* Gewinnerbox */
 #winner {
   margin-top: 20px;
   padding: 15px;
-  background-color: #1f4037;
-  color: white;
+  background: #1f4037;
+  color: #fff;
   border-radius: 5px;
   text-align: center;
   font-size: 1.2rem;
-}
-
-/* Preset Buttons */
-#preset-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 
 /* Footer */
@@ -113,46 +134,57 @@ footer {
   border-top: 1px solid #233554;
 }
 
-/* ------------------- */
-/* 📱 Mobile Optimiert */
-/* ------------------- */
-@media screen and (max-width: 768px) {
+/* Zahlfeld‑Spinner entfernen */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* ——— RESPONSIVE BREAKPOINTS ——— */
+
+/* sehr schmale Smartphones */
+@media (max-width: 374px) {
+  body { font-size: 15px; }
+  h1   { font-size: 1.5rem; }
+
+  /* Nur die Buttons, die wirklich vollbreit sein sollen */
+  #setup-form button,
+  #player-form button,
+  #restart-button,
+  #reset-button,
+  input {
+    width: 100%;
+  }
+
+  /* Vorschlags‑Buttons wieder in zwei Spalten */
+  #preset-buttons .preset-player {
+    flex-basis: calc(50% - 10px);
+  }
+}
+
+
+/* Tablets */
+@media (min-width: 600px) and (max-width: 1023px) {
   body {
-    font-size: 20px;
-    padding: 16px;
+    font-size: 17px;
+    padding: 20px;
+  }
+}
+
+/* Große Screens */
+@media (min-width: 1024px) {
+  body {
+    font-size: 18px;
+    max-width: 1000px;
+    margin: 0 auto;
   }
 
-  h1 {
-    font-size: 2.4rem;
-  }
-
-  input,
-  button {
-    width: 100%;
-    font-size: 1.6rem;
-    padding: 16px;
-  }
-
-  .player {
-    font-size: 1.6rem;
-  }
-
-  .player button {
-    width: 100%;
-    font-size: 1.6rem;
-    padding: 16px;
-    margin: 6px 0;
-  }
-
-  #winner {
-    font-size: 1.6rem;
-  }
-
-  #preset-buttons {
-    flex-direction: column;
-  }
-
-  footer {
-    font-size: 1rem;
+  button,
+  input {
+    max-width: 300px;
   }
 }
