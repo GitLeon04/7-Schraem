@@ -93,7 +93,7 @@ function addPlayer() {
 }
 
 function createPlayer(name) {
-  /* Doppelten Spieler überspringen (gilt auch für Vorschläge) */
+  /* Doppelten Spieler blockieren */
   if (players.some(p => p.name === name)) return;
 
   const nickname = nicknames[name] || '';
@@ -105,12 +105,22 @@ function createPlayer(name) {
     balance: 0,
     lastAction: null
   });
+
+  /* Passenden Vorschlags‑Button deaktivieren */
+  const btn = document.querySelector(`.preset-player[data-name="${name}"]`);
+  if (btn) btn.disabled = true;
+
   renderPlayers();
   saveState();
 }
 
 function removePlayer(player) {
   players = players.filter(p => p.name !== player.name);
+
+  /* Button wieder aktivieren, falls Name aus Vorschlägen stammt */
+  const btn = document.querySelector(`.preset-player[data-name="${player.name}"]`);
+  if (btn) btn.disabled = false;
+
   document.getElementById('winner').hidden = true;
   renderPlayers();
   saveState();
@@ -196,6 +206,9 @@ function resetGame() {
   localStorage.removeItem('lifetracker-state');
   players   = [];
   globalBet = 2.0;
+
+  /* Vorschlags‑Buttons wieder aktivieren */
+  document.querySelectorAll('.preset-player').forEach(b => b.disabled = false);
 
   document.getElementById('players').innerHTML = '';
   document.getElementById('winner').hidden      = true;
@@ -291,7 +304,13 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('reset-button'     ).addEventListener('click', resetGame);
 
   document.querySelectorAll('.preset-player').forEach(btn => {
-    btn.addEventListener('click', () => createPlayer(btn.dataset.name));
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.name;
+      if (!players.some(p => p.name === name)) {
+        createPlayer(name);
+        btn.disabled = true;           // sofort sperren
+      }
+    });
   });
 
   document.getElementById('players').addEventListener('click', e => {
