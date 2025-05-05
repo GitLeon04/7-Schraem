@@ -155,10 +155,23 @@ function renderPlayers() {
   const container = document.getElementById('players');
   container.innerHTML = '';
 
+  const isMobile = window.innerWidth <= 768;
+
   players.forEach((player, index) => {
     const balance = player.balance;
-    const subtractButtons = Array.from({ length: 7 }, (_, i) =>
-      `<button onclick="subtractLife(${index}, ${i + 1})">-${i + 1}</button>`).join(' ');
+
+    // Buttons
+    const buttons = [];
+
+    // Auf Mobilgeräten nur -1 und +1
+    buttons.push(`<button onclick="subtractLife(${index}, 1)">-1</button>`);
+    if (!isMobile) {
+      for (let i = 2; i <= 7; i++) {
+        buttons.push(`<button class="btn-advanced" onclick="subtractLife(${index}, ${i})">-${i}</button>`);
+      }
+    }
+    buttons.push(`<button onclick="addLife(${index})">+1</button>`);
+    buttons.push(`<button onclick="removePlayer(${index})">Entfernen</button>`);
 
     const playerDiv = document.createElement('div');
     playerDiv.className = 'player' + (player.eliminated ? ' eliminated' : '');
@@ -166,9 +179,7 @@ function renderPlayers() {
       <strong>${player.name}</strong> |
       Leben: ${player.life} |
       Kontostand: ${balance >= 0 ? '+' : ''}€${balance.toFixed(2)}<br>
-      ${!player.eliminated ? subtractButtons : ' (eliminiert)'} 
-      ${!player.eliminated ? `<button onclick="addLife(${index})">+1</button>` : ''}
-      <button onclick="removePlayer(${index})">Entfernen</button>
+      ${!player.eliminated ? buttons.join(' ') : ' (eliminiert)'}
     `;
     container.appendChild(playerDiv);
   });
@@ -177,6 +188,7 @@ function renderPlayers() {
   document.getElementById('restart-button').style.display = hasPlayers ? 'inline-block' : 'none';
   document.getElementById('reset-button').style.display = hasPlayers ? 'inline-block' : 'none';
 }
+
 
 function checkWinner() {
   const alive = players.filter(p => !p.eliminated);

@@ -144,3 +144,25 @@ input[type=number]::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+
+/* Buttons für Touch besser sichtbar */
+@media screen and (max-width: 768px) {
+  body {
+    font-size: 1.1rem;
+  }
+
+  .player {
+    font-size: 1.1rem;
+  }
+
+  .player button {
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  /* Nur -1, +1, Entfernen auf Mobile */
+  .btn-advanced {
+    display: none;
+  }
+}
