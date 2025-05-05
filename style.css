@@ -4,6 +4,7 @@
   --accent: #64ffda;
   --text: #e6f1ff;
   --danger: #ff4c4c;
+  --warning: #ffe066;
 }
 
 * {
@@ -21,31 +22,31 @@ body {
 h1 {
   margin-bottom: 20px;
   color: var(--accent);
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   text-align: center;
 }
 
 input {
-  margin: 6px 6px 6px 0;
-  padding: 10px;
+  margin: 8px 8px 8px 0;
+  padding: 14px;
   background-color: var(--card-dark);
   border: 1px solid #333;
   color: var(--text);
   border-radius: 5px;
-  font-size: 1rem;
+  font-size: 1.2rem;
   max-width: 100%;
 }
 
 button {
-  margin: 6px 4px 6px 0;
-  padding: 8px 12px;
+  margin: 8px 6px 8px 0;
+  padding: 14px 20px;
   background-color: var(--card-dark);
   color: var(--text);
   border: 1px solid var(--accent);
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.95rem;
+  font-size: 1.2rem;
 }
 
 button:hover {
@@ -58,17 +59,23 @@ button:hover {
 }
 
 .player {
-  padding: 10px;
-  margin: 10px 0;
+  padding: 14px;
+  margin: 14px 0;
   background-color: var(--card-dark);
   border-left: 4px solid var(--accent);
   border-radius: 5px;
   word-break: break-word;
+  font-size: 1.2rem;
 }
 
 .player.eliminated {
   background-color: var(--danger);
   text-decoration: line-through;
+}
+
+.player.warning {
+  background-color: var(--warning);
+  color: black;
 }
 
 #winner {
@@ -78,91 +85,52 @@ button:hover {
   color: white;
   border-radius: 5px;
   text-align: center;
+  font-size: 1.3rem;
 }
 
 #preset-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 footer {
   margin-top: 40px;
   padding-top: 10px;
-  font-size: 0.85rem;
+  font-size: 1rem;
   text-align: center;
   color: #8892b0;
   border-top: 1px solid #233554;
 }
 
-/* Buttons in Spieler-Box */
-.player button {
-  margin: 4px 4px 4px 0;
-}
-
-/* Responsive Design */
+/* Mobil: alles einfach größer und gestapelt */
 @media screen and (max-width: 768px) {
-  body {
-    padding: 10px;
+  .player {
+    font-size: 1.4rem;
   }
 
-  h1 {
-    font-size: 1.5rem;
+  .player button {
+    width: 100%;
+    margin: 6px 0;
+    font-size: 1.4rem;
+    padding: 16px;
   }
 
   input,
   button {
     width: 100%;
-    margin: 6px 0;
-    font-size: 1rem;
+    font-size: 1.4rem;
+  }
+
+  h1 {
+    font-size: 2rem;
   }
 
   #preset-buttons {
     flex-direction: column;
-    align-items: stretch;
   }
 
-  .player {
-    font-size: 0.95rem;
-  }
-
-  .player button {
-    width: 100%;
-    margin: 4px 0;
-  }
-}
-
-
-/* Spinner bei Number-Input ausblenden (Chrome, Safari, Edge) */
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* Für Firefox */
-input[type=number] {
-  -moz-appearance: textfield;
-}
-
-
-/* Buttons für Touch besser sichtbar */
-@media screen and (max-width: 768px) {
-  body {
-    font-size: 1.1rem;
-  }
-
-  .player {
-    font-size: 1.1rem;
-  }
-
-  .player button {
-    padding: 12px;
-    font-size: 1rem;
-  }
-
-  /* Nur -1, +1, Entfernen auf Mobile */
-  .btn-advanced {
-    display: none;
+  #winner {
+    font-size: 1.4rem;
   }
 }

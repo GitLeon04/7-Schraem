@@ -1,5 +1,5 @@
 let players = [];
-let globalBet = 2;
+let globalBet = 2.0;
 
 const deathSounds = [
   "vine-boom.mp3",
@@ -10,13 +10,29 @@ const deathSounds = [
   "heheheha.mp3"
 ];
 
-// ----- LocalStorage -----
+const nicknames = {
+  "Leon": "Flaschko",
+  "Philipp": "Eckmann",
+  "Lukas": "Ansgar",
+  "Ilke": "Ilkcross",
+  "Tolj": "Tolj",
+  "Tim": "Titan"
+};
+
+let currentAudio = null;
+
+function playRandomDeathSound() {
+  const file = deathSounds[Math.floor(Math.random() * deathSounds.length)];
+  if (currentAudio && !currentAudio.paused) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
+  currentAudio = new Audio(file);
+  currentAudio.play();
+}
 
 function saveState() {
-  const data = {
-    players,
-    globalBet
-  };
+  const data = { players, globalBet };
   localStorage.setItem("lifetracker-state", JSON.stringify(data));
 }
 
@@ -25,7 +41,7 @@ function loadState() {
   if (!saved) return;
   const data = JSON.parse(saved);
   players = data.players || [];
-  globalBet = data.globalBet || 0.5;
+  globalBet = data.globalBet || 2.0;
   document.getElementById('setup-form').style.display = 'none';
   document.getElementById('player-form').style.display = 'block';
   document.getElementById('preset-buttons').style.display = 'block';
@@ -35,7 +51,7 @@ function loadState() {
 function resetGame() {
   localStorage.removeItem("lifetracker-state");
   players = [];
-  globalBet = 0.5;
+  globalBet = 2.0;
   document.getElementById('players').innerHTML = '';
   document.getElementById('winner').style.display = 'none';
   document.getElementById('player-form').style.display = 'none';
@@ -46,49 +62,21 @@ function resetGame() {
   document.getElementById('global-bet').value = '';
 }
 
-// ----- Sound -----
-
-let currentAudio = null;
-
-function playRandomDeathSound() {
-  const file = deathSounds[Math.floor(Math.random() * deathSounds.length)];
-  
-  // vorherigen Sound stoppen, wenn aktiv
-  if (currentAudio && !currentAudio.paused) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
-  }
-
-  currentAudio = new Audio(file);
-  currentAudio.play();
-}
-
-
-// ----- Setup -----
-
 function setBet() {
   const betInput = document.getElementById('global-bet');
   const raw = betInput.value.trim();
-
-  // Fallback auf 0.5, wenn leer oder ungültig
-  const bet = raw === '' ? 2 : parseFloat(raw);
-
+  const bet = raw === '' ? 2.0 : parseFloat(raw);
   if (isNaN(bet) || bet <= 0) {
     alert("Bitte gib einen gültigen Einsatz größer als 0 ein.");
     return;
   }
-
   globalBet = bet;
-
   document.getElementById('player-form').style.display = 'block';
   document.getElementById('preset-buttons').style.display = 'block';
   document.getElementById('setup-form').style.display = 'none';
-
   renderPlayers();
   saveState();
 }
-
-
 
 function addPlayer() {
   const nameInput = document.getElementById('player-name');
@@ -107,14 +95,14 @@ function createPlayer(name) {
     alert(`Spieler "${name}" existiert bereits.`);
     return;
   }
-
+  const nickname = nicknames[name] || '';
   players.push({
     name,
+    displayName: `${nickname} ${name}`,
     life: 7,
     eliminated: false,
     balance: 0
   });
-
   renderPlayers();
   saveState();
 }
@@ -122,13 +110,11 @@ function createPlayer(name) {
 function subtractLife(index, amount = 1) {
   const player = players[index];
   if (player.eliminated) return;
-
   player.life = Math.max(0, player.life - amount);
   if (player.life === 0 && !player.eliminated) {
     player.eliminated = true;
     playRandomDeathSound();
   }
-
   renderPlayers();
   checkWinner();
   saveState();
@@ -149,34 +135,29 @@ function removePlayer(index) {
   saveState();
 }
 
-// ----- Anzeige & Logik -----
-
 function renderPlayers() {
   const container = document.getElementById('players');
   container.innerHTML = '';
 
-  const isMobile = window.innerWidth <= 768;
-
   players.forEach((player, index) => {
     const balance = player.balance;
-
-    // Buttons
     const buttons = [];
 
-    // Auf Mobilgeräten nur -1 und +1
-    buttons.push(`<button onclick="subtractLife(${index}, 1)">-1</button>`);
-    if (!isMobile) {
-      for (let i = 2; i <= 7; i++) {
-        buttons.push(`<button class="btn-advanced" onclick="subtractLife(${index}, ${i})">-${i}</button>`);
-      }
+    for (let i = 1; i <= 7; i++) {
+      buttons.push(`<button onclick="subtractLife(${index}, ${i})">-${i}</button>`);
     }
+
     buttons.push(`<button onclick="addLife(${index})">+1</button>`);
     buttons.push(`<button onclick="removePlayer(${index})">Entfernen</button>`);
 
+    let playerClass = 'player';
+    if (player.eliminated) playerClass += ' eliminated';
+    else if (player.life === 1) playerClass += ' warning';
+
     const playerDiv = document.createElement('div');
-    playerDiv.className = 'player' + (player.eliminated ? ' eliminated' : '');
+    playerDiv.className = playerClass;
     playerDiv.innerHTML = `
-      <strong>${player.name}</strong> |
+      <strong>${player.displayName}</strong> |
       Leben: ${player.life} |
       Kontostand: ${balance >= 0 ? '+' : ''}€${balance.toFixed(2)}<br>
       ${!player.eliminated ? buttons.join(' ') : ' (eliminiert)'}
@@ -188,7 +169,6 @@ function renderPlayers() {
   document.getElementById('restart-button').style.display = hasPlayers ? 'inline-block' : 'none';
   document.getElementById('reset-button').style.display = hasPlayers ? 'inline-block' : 'none';
 }
-
 
 function checkWinner() {
   const alive = players.filter(p => !p.eliminated);
@@ -209,7 +189,7 @@ function checkWinner() {
   const winnerDiv = document.getElementById('winner');
   winnerDiv.style.display = 'block';
   winnerDiv.innerHTML = `
-    <h2>Gewinner: ${winner.name}</h2>
+    <h2>Gewinner: ${winner.displayName}</h2>
     <p>Er gewinnt €${totalPot.toFixed(2)} (Einsatz aller anderen Spieler)</p>
   `;
 
@@ -228,5 +208,4 @@ function restartGame() {
   saveState();
 }
 
-// ----- Autostart -----
 window.onload = loadState;
