@@ -1,40 +1,45 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kartenspiel Lebens-Tracker</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>7 Schrämm Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
-  <div class="container">
-    <h1>Kartenspiel Lebens-Tracker</h1>
+  <h1>7 Schrämm Tracker</h1>
 
-    <div id="setup-form">
-      <input type="number" id="global-bet" placeholder="Einsatz pro Spieler (€)" step="0.01" />
-      <button onclick="setBet()">Einsatz festlegen</button>
-    </div>
-
-    <div id="player-form" style="display: none;">
-      <input type="text" id="player-name" placeholder="Spielername" />
-      <button onclick="addPlayer()">Spieler hinzufügen</button>
-    </div>
-
-    <div id="preset-buttons" style="display: none;">
-      <p>Vorschläge:</p>
-      <button onclick="addPresetPlayer('Leon')">Leon</button>
-      <button onclick="addPresetPlayer('Philipp')">Philipp</button>
-      <button onclick="addPresetPlayer('Lukas')">Lukas</button>
-      <button onclick="addPresetPlayer('Ilke')">Ilke</button>
-      <button onclick="addPresetPlayer('Tolgi')">Tolgi</button>
-    </div>
-
-    <div id="players"></div>
-
-    <button onclick="restartGame()" id="restart-button" style="display: none;">Neustart</button>
-
-    <div id="winner" style="display: none;"></div>
+  <div id="setup-form">
+    <input type="number" id="global-bet" placeholder="Einsatz pro Spieler (€)" step="0.01">
+    <button onclick="setBet()">Einsatz festlegen</button>
   </div>
+
+  <div id="player-form" style="display: none;">
+    <input type="text" id="player-name" placeholder="Spielername">
+    <button onclick="addPlayer()">Spieler hinzufügen</button>
+  </div>
+
+  <div id="preset-buttons" style="display: none; margin-top: 10px;">
+    <p>Vorschläge:</p>
+    <button onclick="addPresetPlayer('Leon')">Flaschko</button>
+    <button onclick="addPresetPlayer('Philipp')">Eckmann</button>
+    <button onclick="addPresetPlayer('Lukas')">Ansgar</button>
+    <button onclick="addPresetPlayer('Ilke')">Ilkcross</button>
+    <button onclick="addPresetPlayer('Tolj')">Tolj</button>
+    <button onclick="addPresetPlayer('Tim')">Titan</button>
+  </div>
+
+  <div id="players"></div>
+
+  <button onclick="restartGame()" id="restart-button" style="display: none;">Neustart</button>
+  <button onclick="resetGame()" id="reset-button" style="display: none;">Reset (alles löschen)</button>
+
+  <div id="winner" style="display: none;"></div>
+
+  <footer>
+    <p>Dies ist ein rein privates Projekt für den nicht-kommerziellen Gebrauch im Freundeskreis.</p>
+    <p>Made by Lukas & Leon</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>

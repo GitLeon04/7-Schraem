@@ -1,91 +1,133 @@
-/* Grundlegendes Layout */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #1f1c2c, #928dab);
-  color: #ffffff;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+:root {
+  --bg-dark: #0a192f;
+  --card-dark: #112240;
+  --accent: #64ffda;
+  --text: #e6f1ff;
+  --danger: #ff4c4c;
 }
 
-.container {
-  width: 90%;
-  max-width: 800px;
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
   padding: 20px;
-  background-color: rgba(30, 30, 30, 0.9);
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  background-color: var(--bg-dark);
+  color: var(--text);
+  margin: 0;
 }
 
 h1 {
-  text-align: center;
   margin-bottom: 20px;
-  color: #f39c12;
+  color: var(--accent);
+  font-size: 1.8rem;
+  text-align: center;
 }
 
-/* Formulareingaben */
-input[type="text"],
-input[type="number"] {
+input {
+  margin: 6px 6px 6px 0;
   padding: 10px;
-  margin: 5px 0;
-  width: calc(100% - 22px);
-  border: none;
+  background-color: var(--card-dark);
+  border: 1px solid #333;
+  color: var(--text);
   border-radius: 5px;
-  background-color: #2c3e50;
-  color: #ecf0f1;
+  font-size: 1rem;
+  max-width: 100%;
 }
 
-/* Buttons */
 button {
-  padding: 10px 15px;
-  margin: 5px 5px 5px 0;
-  border: none;
+  margin: 6px 4px 6px 0;
+  padding: 8px 12px;
+  background-color: var(--card-dark);
+  color: var(--text);
+  border: 1px solid var(--accent);
   border-radius: 5px;
-  background: linear-gradient(45deg, #f39c12, #d35400);
-  color: #fff;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
 }
 
 button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 10px #f39c12;
+  background-color: var(--accent);
+  color: var(--bg-dark);
 }
 
-/* Spielerbereich */
 #players {
   margin-top: 20px;
 }
 
 .player {
-  background-color: #34495e;
-  padding: 15px;
-  margin-bottom: 10px;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: var(--card-dark);
+  border-left: 4px solid var(--accent);
   border-radius: 5px;
-  animation: fadeIn 0.5s ease-in-out;
+  word-break: break-word;
 }
 
 .player.eliminated {
-  background-color: #7f8c8d;
+  background-color: var(--danger);
   text-decoration: line-through;
-  opacity: 0.6;
 }
 
-/* Gewinneranzeige */
 #winner {
   margin-top: 20px;
   padding: 15px;
-  background-color: #27ae60;
+  background-color: #1f4037;
+  color: white;
   border-radius: 5px;
   text-align: center;
-  animation: fadeIn 0.5s ease-in-out;
 }
 
-/* Animationen */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+#preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+footer {
+  margin-top: 40px;
+  padding-top: 10px;
+  font-size: 0.85rem;
+  text-align: center;
+  color: #8892b0;
+  border-top: 1px solid #233554;
+}
+
+/* Buttons in Spieler-Box */
+.player button {
+  margin: 4px 4px 4px 0;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  input,
+  button {
+    width: 100%;
+    margin: 6px 0;
+    font-size: 1rem;
+  }
+
+  #preset-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .player {
+    font-size: 0.95rem;
+  }
+
+  .player button {
+    width: 100%;
+    margin: 4px 0;
+  }
 }
