@@ -1,0 +1,91 @@
+/* Grundlegendes Layout */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  color: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  width: 90%;
+  max-width: 800px;
+  padding: 20px;
+  background-color: rgba(30, 30, 30, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #f39c12;
+}
+
+/* Formulareingaben */
+input[type="text"],
+input[type="number"] {
+  padding: 10px;
+  margin: 5px 0;
+  width: calc(100% - 22px);
+  border: none;
+  border-radius: 5px;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+}
+
+/* Buttons */
+button {
+  padding: 10px 15px;
+  margin: 5px 5px 5px 0;
+  border: none;
+  border-radius: 5px;
+  background: linear-gradient(45deg, #f39c12, #d35400);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px #f39c12;
+}
+
+/* Spielerbereich */
+#players {
+  margin-top: 20px;
+}
+
+.player {
+  background-color: #34495e;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.player.eliminated {
+  background-color: #7f8c8d;
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Gewinneranzeige */
+#winner {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #27ae60;
+  border-radius: 5px;
+  text-align: center;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Animationen */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
