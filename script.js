@@ -251,9 +251,6 @@ function renderPlayers() {
         `<button class="life-btn${addActive}" data-action="add" data-name="${player.name}">+1</button>`
       );
 
-      buttons.push(
-        `<button data-action="remove" data-name="${player.name}">Entfernen</button>`
-      );
 
       let classes = 'player';
       if (player.eliminated) classes += ' eliminated';
