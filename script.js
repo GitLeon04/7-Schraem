@@ -264,7 +264,7 @@ function renderPlayers() {
       div.innerHTML = `
         <strong>${player.displayName}</strong> |
         Leben: ${player.life} |
-        Kontostand: ${player.balance >= 0 ? '+' : ''}€${player.balance.toFixed(2)}<br>
+        Konto: ${player.balance >= 0 ? '+' : ''}€${player.balance.toFixed(2)}<br>
         ${player.eliminated ? '(eliminiert)' : buttons.join(' ')}
       `;
       container.appendChild(div);
