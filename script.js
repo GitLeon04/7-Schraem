@@ -11,7 +11,8 @@ const deathSounds = [
   'aughhhhh-aughhhhh.mp3',
   'better-call-saul-intro.mp3',
   'pimtopimati.mp3',
-  'Fortnite-death-sound-effect.mp3'
+  'Fortnite-death-sound-effect.mp3',
+  'troy bolton_1746556836_musicaldown.com.mp3'
 
 
 ];
