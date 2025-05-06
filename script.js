@@ -5,14 +5,14 @@ let players   = [];
 let globalBet = 2.0;
 
 const deathSounds = [
-  'vine-boom.mp3',
-  'metal-pipe-clang.mp3',
-  'taco-bell-bong-sfx.mp3',
-  'aughhhhh-aughhhhh.mp3',
-  'better-call-saul-intro.mp3',
-  'pimtopimati.mp3',
-  'Fortnite-death-sound-effect.mp3',
-  'troy bolton_1746556836_musicaldown.com.mp3'
+  'sounds/vine-boom.mp3',
+  'sounds/metal-pipe-clang.mp3',
+  'sounds/taco-bell-bong-sfx.mp3',
+  'sounds/aughhhhh-aughhhhh.mp3',
+  'sounds/better-call-saul-intro.mp3',
+  'sounds/pimtopimati.mp3',
+  'sounds/Fortnite-death-sound-effect.mp3',
+  'sounds/troy bolton_1746556836_musicaldown.com.mp3'
 
 
 ];
