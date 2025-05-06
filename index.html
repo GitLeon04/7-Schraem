@@ -64,10 +64,25 @@
   <footer>
     <p>Dies ist ein rein privates Projekt für den nicht kommerziellen Gebrauch im Freundeskreis.</p>
     <p>Made by Ansgar &amp; Flaschko &amp; Eckmann</p>
-    <p>Last Deployment: 06.05.2025 20:50</p>
+    <p id="last-deploy">Letztes Deployment wird geladen...</p>
   </footer>
 
   <!-- Hauptlogik -->
   <script src="script.js"></script>
+
+  <!-- GitHub API für letztes Commit -->
+  <script>
+    fetch('https://api.github.com/repos/GitLeon04/7-Schraem/commits?per_page=1')
+      .then(response => response.json())
+      .then(data => {
+        const commitDate = new Date(data[0].commit.committer.date);
+        document.getElementById('last-deploy').textContent =
+          'Letztes Deployment: ' + commitDate.toLocaleString('de-DE');
+      })
+      .catch(() => {
+        document.getElementById('last-deploy').textContent =
+          'Letztes Deployment konnte nicht geladen werden';
+      });
+  </script>
 </body>
 </html>
