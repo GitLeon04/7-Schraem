@@ -119,9 +119,12 @@ function createPlayer(name) {
 }
 
 function removePlayer(player) {
+  const confirmDelete = confirm(`Möchtest du den Spieler "${player.name}" wirklich löschen?`);
+  if (!confirmDelete) return;
+
   players = players.filter(p => p.name !== player.name);
 
-  /* Button wieder aktivieren, falls Name aus Vorschlägen stammt */
+  // Button wieder aktivieren, falls Name aus Vorschlägen stammt
   const btn = document.querySelector(`.preset-player[data-name="${player.name}"]`);
   if (btn) btn.disabled = false;
 
@@ -129,6 +132,7 @@ function removePlayer(player) {
   renderPlayers();
   saveState();
 }
+
 
 function getPlayerByName(name) {
   return players.find(p => p.name === name);
