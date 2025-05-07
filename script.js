@@ -179,7 +179,7 @@ function checkWinner() {
    Neustart & Reset
 ------------------------------------------------------------------ */
 function restartGame() {
-  if (!confirm('Willsr du eine neue Runde starten?')) return;
+  if (!confirm('Willst du eine neue Runde starten?')) return;
 
   players.forEach(p => {
     p.life       = 7;
