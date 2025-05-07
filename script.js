@@ -81,7 +81,7 @@ function setBet() {
 }
 
 /* ------------------------------------------------------------------
-   Spieler hinzufügen / entfernen
+   Spieler hinzufügen
 ------------------------------------------------------------------ */
 function addPlayer() {
   const input = document.getElementById('player-name');
@@ -110,29 +110,12 @@ function createPlayer(name) {
     lastAction: null
   });
 
-  /* Passenden Vorschlags‑Button deaktivieren */
   const btn = document.querySelector(`.preset-player[data-name="${name}"]`);
   if (btn) btn.disabled = true;
 
   renderPlayers();
   saveState();
 }
-
-function removePlayer(player) {
-  const confirmDelete = confirm(`Möchtest du den Spieler "${player.name}" wirklich löschen?`);
-  if (!confirmDelete) return;
-
-  players = players.filter(p => p.name !== player.name);
-
-  // Button wieder aktivieren, falls Name aus Vorschlägen stammt
-  const btn = document.querySelector(`.preset-player[data-name="${player.name}"]`);
-  if (btn) btn.disabled = false;
-
-  document.getElementById('winner').hidden = true;
-  renderPlayers();
-  saveState();
-}
-
 
 function getPlayerByName(name) {
   return players.find(p => p.name === name);
@@ -196,7 +179,7 @@ function checkWinner() {
    Neustart & Reset
 ------------------------------------------------------------------ */
 function restartGame() {
-  if (!confirm('Spiel wirklich neu starten?')) return;
+  if (!confirm('Willsr du eine neue Runde starten?')) return;
 
   players.forEach(p => {
     p.life       = 7;
@@ -215,7 +198,6 @@ function resetGame() {
   players   = [];
   globalBet = 2.0;
 
-  /* Vorschlags‑Buttons wieder aktivieren */
   document.querySelectorAll('.preset-player').forEach(b => b.disabled = false);
 
   document.getElementById('players').innerHTML = '';
@@ -313,7 +295,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const name = btn.dataset.name;
       if (!players.some(p => p.name === name)) {
         createPlayer(name);
-        btn.disabled = true;           // sofort sperren
+        btn.disabled = true;      
       }
     });
   });
