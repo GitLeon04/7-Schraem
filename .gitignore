@@ -1,2 +1,3 @@
 #Stop push of local storage
 .DS_Store
+node_modules/
