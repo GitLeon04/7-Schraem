@@ -516,6 +516,157 @@ input.invalid:focus { border-color: var(--danger); }
 /* ---------- Actions ---------- */
 .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
 
+/* ---------- Palantir Telemetry CLI Panel ---------- */
+.cli-panel {
+  margin-top: 14px;
+  background: #060608;
+  border: 1px solid var(--line-strong);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.cli-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: #0d0d10;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  user-select: none;
+}
+
+.cli-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cli-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #27272a;
+}
+.cli-dot.red    { background: #ef4444; opacity: 0.85; }
+.cli-dot.yellow { background: #f59e0b; opacity: 0.85; }
+.cli-dot.green  { background: #10b981; opacity: 0.85; }
+
+.cli-title {
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cli-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #10b981;
+}
+
+.cli-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: cli-pulse 1.8s infinite ease-in-out;
+}
+
+@keyframes cli-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.cli-body {
+  height: 92px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.45;
+  background: #060608;
+  color: #d4d4d8;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.cli-line {
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cli-time {
+  color: #71717a;
+  font-size: 10px;
+}
+
+.cli-tag {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+.cli-tag-init { color: #06b6d4; }
+.cli-tag-info { color: #3b82f6; }
+.cli-tag-crit { color: #ef4444; }
+.cli-tag-warn { color: #f59e0b; }
+.cli-tag-win  { color: #a855f7; }
+
+.cli-msg {
+  color: #e4e4e7;
+}
+
+.cli-extra {
+  color: #71717a;
+  font-size: 10px;
+}
+
+.cli-footer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 14px 6px;
+  background: #060608;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #71717a;
+}
+
+.cli-prompt {
+  color: #10b981;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.cli-cursor {
+  color: #10b981;
+  font-size: 11px;
+  line-height: 1;
+  animation: cli-blink 1s step-start infinite;
+}
+
+@keyframes cli-blink {
+  50% { opacity: 0; }
+}
+
 /* ---------- Footer ---------- */
 .footer { border-top: 1px solid var(--line); }
 .footer-inner {
@@ -1060,6 +1211,59 @@ input.invalid:focus { border-color: var(--danger); }
     height: 32px;
     font-size: 11px;
     padding: 0 8px;
+  }
+
+  /* CLI Panel Mobile */
+  .cli-panel {
+    margin-top: 6px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .cli-header {
+    padding: 3px 8px;
+    font-size: 8px;
+  }
+  .cli-dots {
+    gap: 4px;
+  }
+  .cli-dot {
+    width: 5px;
+    height: 5px;
+  }
+  .cli-title {
+    font-size: 8px;
+    letter-spacing: 0.08em;
+  }
+  .cli-badge {
+    font-size: 8px;
+    gap: 3px;
+  }
+  .cli-live-dot {
+    width: 4px;
+    height: 4px;
+  }
+  .cli-body {
+    height: 48px;
+    padding: 4px 8px;
+    font-size: 9px;
+    line-height: 1.35;
+    gap: 2px;
+  }
+  .cli-time {
+    font-size: 8px;
+  }
+  .cli-tag {
+    font-size: 8px;
+  }
+  .cli-extra {
+    font-size: 8px;
+  }
+  .cli-footer {
+    padding: 2px 8px 3px;
+    font-size: 8px;
+  }
+  .cli-prompt {
+    font-size: 8px;
   }
 
   /* Footer auf Handy ausblenden, um den Bildschirm für das Spielbrett freizuhalten */

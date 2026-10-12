@@ -97,19 +97,91 @@
     return p ? p.name : '';
   }
 
+  /* ----------------------------------------------------------------
+     Palantir Telemetry CLI Stream (Deko)
+  ---------------------------------------------------------------- */
+  const cliLogs = [];
+  const MAX_CLI_LINES = 60;
+
+  function pad(n, width) {
+    return String(n).padStart(width || 2, '0');
+  }
+
+  function getTimestamp() {
+    const d = new Date();
+    return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3);
+  }
+
+  function logCli(type, message, extra) {
+    const time = getTimestamp();
+    cliLogs.push({ time, type, message, extra: extra || '' });
+    if (cliLogs.length > MAX_CLI_LINES) cliLogs.shift();
+    renderCli();
+  }
+
+  function scrollCliToBottom() {
+    const el = $('cli-output');
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight;
+        setTimeout(() => {
+          el.scrollTop = el.scrollHeight;
+        }, 0);
+      });
+    }
+  }
+
+  function renderCli() {
+    const el = $('cli-output');
+    if (!el) return;
+    el.innerHTML = cliLogs.map(l => {
+      let tagCls = 'cli-tag-info';
+      if (l.type === 'CRIT' || l.type === 'ELIM') tagCls = 'cli-tag-crit';
+      else if (l.type === 'WARN' || l.type === 'REVIVE') tagCls = 'cli-tag-warn';
+      else if (l.type === 'SETTLE' || l.type === 'WIN') tagCls = 'cli-tag-win';
+      else if (l.type === 'INIT' || l.type === 'BOOT') tagCls = 'cli-tag-init';
+
+      return '<div class="cli-line">' +
+        '<span class="cli-time">[' + l.time + ']</span> ' +
+        '<span class="cli-tag ' + tagCls + '">[' + l.type + ']</span> ' +
+        '<span class="cli-msg">' + V.escapeHtml(l.message) + '</span>' +
+        (l.extra ? ' <span class="cli-extra">' + V.escapeHtml(l.extra) + '</span>' : '') +
+      '</div>';
+    }).join('');
+    scrollCliToBottom();
+  }
+
   function handleEvent(ev) {
     switch (ev.type) {
       case 'eliminated':
         playDeathSound();
+        logCli('CRIT', 'SYS::PLAYER_ELIMINATED -> target="' + nameOf(ev.playerId) + '"', 'stack_push=' + ev.playerId);
         break;
       case 'winner':
         toast(nameOf(ev.playerId) + ' gewinnt ' + G.formatCents(ev.potCents), 'success');
+        logCli('SETTLE', 'SYS::ROUND_SETTLED -> winner="' + nameOf(ev.playerId) + '"', 'pot=' + G.formatCents(ev.potCents) + ' sum=0¢');
         break;
       case 'settlement-reversed':
         toast('Auszahlung zurückgebucht', 'info');
+        logCli('WARN', 'SYS::SETTLEMENT_REVERSED -> pot_rescinded=' + G.formatCents(ev.potCents));
         break;
       case 'revived':
         toast(nameOf(ev.playerId) + ' ist zurück mit ' + ev.lives + ' Leben', 'success');
+        logCli('REVIVE', 'SYS::REVIVE_EXEC -> target="' + nameOf(ev.playerId) + '"', 'lives=' + ev.lives);
+        break;
+      case 'player-added':
+        logCli('INIT', 'SYS::PLAYER_REGISTER -> target="' + nameOf(ev.playerId) + '"', 'lives=' + G.MAX_LIVES);
+        break;
+      case 'player-removed':
+        logCli('WARN', 'SYS::PLAYER_DEREGISTER -> id=' + ev.playerId);
+        break;
+      case 'round-started':
+        logCli('INIT', 'SYS::ROUND_INCREMENT -> round=' + pad(ev.round), 'stack_cleared=TRUE');
+        break;
+      case 'restored':
+        logCli('WARN', 'SYS::TIME_TRAVEL_RESTORE -> checkpoint=#' + ev.historyId, 'snapshot=LOADED');
         break;
     }
   }
@@ -123,6 +195,7 @@
     $('setup-form').hidden = betSet && !editingBet;
     $('cancel-bet-button').hidden = !editingBet;
     $('game').hidden = !betSet;
+    if (betSet) scrollCliToBottom();
 
     $('stats').innerHTML = V.renderStats(state);
     $('players').innerHTML = V.renderPlayers(state);
@@ -212,9 +285,11 @@
 
     switch (btn.dataset.action) {
       case 'subtract':
+        logCli('EVENT', 'SYS::DELTA_LIFE -> target="' + nameOf(id) + '" delta=-' + btn.dataset.amount);
         apply(G.subtractLife(state, id, parseInt(btn.dataset.amount, 10)));
         break;
       case 'add':
+        logCli('EVENT', 'SYS::DELTA_LIFE -> target="' + nameOf(id) + '" delta=+1');
         apply(G.addLife(state, id));
         break;
       case 'revive':
@@ -351,6 +426,24 @@
     }
     render();
     loadLastDeploy();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const cliEl = $('cli-output');
+      if (cliEl) {
+        new ResizeObserver(() => {
+          scrollCliToBottom();
+        }).observe(cliEl);
+      }
+    }
+
+    logCli('BOOT', 'KERNEL_INIT: Palantir Schraem-OS v2.4.9 (x86_64-palantir-linux-gnu)');
+    logCli('INIT', 'SUBSYSTEM_LEDGER: Zero-Sum Ledger mounted', 'checksum=0x7E01 sum=0¢');
+    logCli('INIT', 'SUBSYSTEM_AUDIO: Psychoacoustic sound matrix online', '8_channels');
+    logCli('INIT', 'SUBSYSTEM_STACK: LIFO elimination enforcement enabled');
+    if (state.betConfirmed) {
+      logCli('INFO', 'SESSION_RESTORED: Bet=' + G.formatCents(state.betCents), 'active_players=' + state.players.length);
+    }
+    scrollCliToBottom();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

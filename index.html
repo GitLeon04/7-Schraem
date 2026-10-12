@@ -107,6 +107,24 @@
         <button type="button" id="restart-button" class="btn" hidden>Nächste Runde <span aria-hidden="true">→</span></button>
         <button type="button" id="reset-button" class="btn btn-danger-ghost" hidden>Alles zurücksetzen</button>
       </section>
+
+      <!-- 04 · System Telemetry / CLI -->
+      <section id="cli-panel" class="cli-panel" aria-label="System Telemetrie">
+        <header class="cli-header">
+          <div class="cli-dots" aria-hidden="true">
+            <span class="cli-dot red"></span>
+            <span class="cli-dot yellow"></span>
+            <span class="cli-dot green"></span>
+          </div>
+          <span class="cli-title">SIBBE SCHRÄMM KERNEL // TELEMETRY &amp; AUDIT FEED</span>
+          <span class="cli-badge"><span class="cli-live-dot"></span>LIVE</span>
+        </header>
+        <div id="cli-output" class="cli-body" role="log" aria-live="polite"></div>
+        <footer class="cli-footer">
+          <span class="cli-prompt">&gt; KERNEL_STANDBY</span>
+          <span class="cli-cursor" aria-hidden="true">█</span>
+        </footer>
+      </section>
     </div>
   </main>
 

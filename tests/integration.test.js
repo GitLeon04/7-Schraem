@@ -40,5 +40,13 @@ describe('index.html <-> app.js wiring', () => {
   test('legacy script.js is no longer referenced', () => {
     assert.ok(!html.includes('src="script.js"'));
   });
+
+  test('telemetry CLI is properly configured for auto-scroll', () => {
+    const css = fs.readFileSync(path.join(root, 'style.css'), 'utf8');
+    assert.ok(html.includes('id="cli-output"'), 'cli-output exists in HTML');
+    assert.ok(app.includes('scrollCliToBottom'), 'app.js includes scrollCliToBottom');
+    assert.ok(css.includes('.cli-line') && css.includes('flex-shrink: 0'), '.cli-line prevents flex squishing');
+    assert.ok(css.includes('overflow-y: auto'), '.cli-body supports vertical scrolling');
+  });
 });
 
