@@ -67,7 +67,8 @@
       name: p.name,
       lives: p.lives,
       balanceCents: p.balanceCents,
-      eliminated: p.eliminated
+      eliminated: p.eliminated,
+      paused: Boolean(p.paused)
     }));
   }
 
@@ -184,8 +185,12 @@
     return state.players.find(p => p.id === id) || null;
   }
 
+  function getParticipatingPlayers(state) {
+    return state.players.filter(p => !p.paused);
+  }
+
   function getAlivePlayers(state) {
-    return state.players.filter(p => !p.eliminated);
+    return state.players.filter(p => !p.paused && !p.eliminated);
   }
 
   function isRoundOver(state) {
@@ -198,13 +203,14 @@
   }
 
   function getPotCents(state) {
-    return state.betCents * Math.max(0, state.players.length - 1);
+    const participating = getParticipatingPlayers(state);
+    return state.betCents * Math.max(0, participating.length - 1);
   }
 
   function getSortedPlayers(state) {
     return state.players
       .map((p, i) => ({ p, i }))
-      .sort((a, b) => (a.p.eliminated - b.p.eliminated) || (a.i - b.i))
+      .sort((a, b) => (Boolean(a.p.paused) - Boolean(b.p.paused)) || (a.p.eliminated - b.p.eliminated) || (a.i - b.i))
       .map(x => x.p);
   }
 
@@ -214,7 +220,7 @@
 
   function canRevive(state, id) {
     const p = getPlayer(state, id);
-    if (!p || !p.eliminated) return false;
+    if (!p || p.paused || !p.eliminated) return false;
     if (!state.round) return false;
     return state.round.lastEliminatedId === id;
   }
@@ -225,7 +231,8 @@
   /** Prüft (auf einem bereits geklonten State), ob es einen Sieger gibt, und bucht ab. */
   function settleIfWinner(next, events) {
     if (next.round.settlement) return;
-    if (next.players.length < 2) return;
+    const participating = getParticipatingPlayers(next);
+    if (participating.length < 2) return;
     const alive = getAlivePlayers(next);
     if (alive.length !== 1) return;
 
@@ -233,7 +240,7 @@
     const bet = next.betCents;
     const deltas = {};
     let pot = 0;
-    for (const p of next.players) {
+    for (const p of participating) {
       if (p.id === winner.id) continue;
       p.balanceCents -= bet;
       deltas[p.id] = -bet;
@@ -273,6 +280,7 @@
       name: v.name,
       lives: MAX_LIVES,
       eliminated: false,
+      paused: false,
       livesBeforeElimination: null,
       balanceCents: 0,
       lastAction: null
@@ -280,6 +288,40 @@
     next.nextId += 1;
     addHistory(next, 'add-player', v.name + ' hinzugefügt (7 Leben)');
     return ok(next, [{ type: 'player-added', playerId: next.nextId - 1 }]);
+  }
+
+  function togglePausePlayer(state, id) {
+    const p = getPlayer(state, id);
+    if (!p) return fail(state, 'not-found');
+    if (isRoundOver(state)) return fail(state, 'round-over');
+
+    const next = clone(state);
+    const target = getPlayer(next, id);
+    const events = [];
+
+    if (!target.paused) {
+      target.paused = true;
+      if (next.round && Array.isArray(next.round.eliminationStack)) {
+        next.round.eliminationStack = next.round.eliminationStack.filter(x => x !== id);
+        next.round.lastEliminatedId = next.round.eliminationStack.length > 0
+          ? next.round.eliminationStack[next.round.eliminationStack.length - 1]
+          : null;
+      }
+      events.push({ type: 'player-paused', playerId: id });
+      addHistory(next, 'pause-player', target.name + ' pausiert diese Runde');
+      if (getParticipatingPlayers(next).some(item => item.eliminated)) {
+        settleIfWinner(next, events);
+      }
+    } else {
+      target.paused = false;
+      target.lives = MAX_LIVES;
+      target.eliminated = false;
+      target.livesBeforeElimination = null;
+      target.lastAction = null;
+      events.push({ type: 'player-unpaused', playerId: id });
+      addHistory(next, 'unpause-player', target.name + ' spielt wieder mit');
+    }
+    return ok(next, events);
   }
 
   function removePlayer(state, id) {
@@ -410,10 +452,12 @@
     if (state.players.length === 0) return fail(state, 'no-players');
     const next = clone(state);
     for (const p of next.players) {
-      p.lives = MAX_LIVES;
-      p.eliminated = false;
-      p.livesBeforeElimination = null;
-      p.lastAction = null;
+      if (!p.paused) {
+        p.lives = MAX_LIVES;
+        p.eliminated = false;
+        p.livesBeforeElimination = null;
+        p.lastAction = null;
+      }
     }
     next.round = {
       number: state.round.number + 1,
@@ -485,9 +529,9 @@
     createInitialState, resetGame,
     parseBet, isValidBet, setBet,
     normalizeName, validateName, isNameTaken,
-    getPlayer, getAlivePlayers, isRoundOver, getWinner, getPotCents,
+    getPlayer, getParticipatingPlayers, getAlivePlayers, isRoundOver, getWinner, getPotCents,
     getSortedPlayers, getLedger, canRevive,
-    addPlayer, removePlayer, subtractLife, addLife, revivePlayer, nextRound,
+    addPlayer, togglePausePlayer, removePlayer, subtractLife, addLife, revivePlayer, nextRound,
     restoreHistory,
     formatCents, formatBetInput, pickDeathSound
   });

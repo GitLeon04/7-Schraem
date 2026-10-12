@@ -1,7 +1,7 @@
 /* ==================================================================
-   7-Schräm – Design
+   7 Schräm – Design
    Minimalistisch, monochrom, scharfe Kanten, Haarlinien,
-   große Typografie und Mono-Labels (angelehnt an palantir.com).
+   große Typografie und Mono-Labels.
 ================================================================== */
 
 :root {
@@ -228,14 +228,18 @@ input.invalid:focus { border-color: var(--danger); }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   height: 48px;
-  padding: 0 22px;
+  padding: 0 16px;
   border: 1px solid var(--line-strong);
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.01em;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+  max-width: 100%;
   transition: background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
 }
 
@@ -455,8 +459,15 @@ input.invalid:focus { border-color: var(--danger); }
 .life-btn.is-active { background: var(--white); color: var(--bg); }
 .life-btn-add { color: var(--success); }
 
-.controls-revive { display: block; }
-.btn-revive {
+.controls-revive,
+.controls-paused {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.btn-revive,
+.btn-unpause {
   width: 100%;
   height: 52px;
   display: flex;
@@ -468,15 +479,37 @@ input.invalid:focus { border-color: var(--danger); }
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text);
+  box-sizing: border-box;
+  padding: 0 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
   transition: background 0.15s var(--ease), color 0.15s var(--ease);
 }
-.btn-revive:hover { background: var(--white); color: var(--bg); }
-.btn-icon { font-size: 16px; letter-spacing: 0; }
+.btn-revive:hover,
+.btn-unpause:hover:not(:disabled) { background: var(--white); color: var(--bg); }
+.btn-icon { font-size: 16px; letter-spacing: 0; line-height: 1; flex-shrink: 0; }
+
+.icon-btn-pause:hover { color: var(--text); border-color: var(--line); }
 
 /* Card states */
 .card.is-warning::before { background: var(--warning); }
 .card.is-warning .card-status { color: var(--warning); border-color: rgba(245, 184, 61, 0.4); }
 .card.is-warning .pip.on { background: var(--warning); }
+
+.card.is-paused {
+  opacity: 0.65;
+  background: #0d0d0f;
+  border-style: dashed;
+}
+.card.is-paused .card-status {
+  color: var(--text-dim);
+  border-color: var(--line);
+}
+.card.is-paused .player-name {
+  color: var(--text-dim);
+}
 
 .card.is-eliminated { background: #0d0c0c; }
 .card.is-eliminated::before { background: var(--danger); }
@@ -516,7 +549,7 @@ input.invalid:focus { border-color: var(--danger); }
 /* ---------- Actions ---------- */
 .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
 
-/* ---------- Palantir Telemetry CLI Panel ---------- */
+/* ---------- 7 Schräm Telemetry CLI Panel ---------- */
 .cli-panel {
   margin-top: 14px;
   background: #060608;
@@ -1145,18 +1178,46 @@ input.invalid:focus { border-color: var(--danger); }
     box-sizing: border-box;
   }
 
+  .controls.controls-revive,
+  .controls.controls-paused,
+  .controls-revive,
+  .controls-paused {
+    display: flex !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
   .life-btn {
     height: 28px;
     font-size: 11px;
     min-width: 0;
     padding: 0;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
   }
 
-  .btn-revive {
+  .btn-revive,
+  .btn-unpause {
+    width: 100%;
     height: 28px;
     font-size: 10px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
+    padding: 0 6px;
+    gap: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+  }
+
+  .btn-revive .btn-icon,
+  .btn-unpause .btn-icon {
+    font-size: 11px;
+    line-height: 1;
+    flex-shrink: 0;
   }
 
   .controls-eliminated {
@@ -1166,6 +1227,8 @@ input.invalid:focus { border-color: var(--danger); }
     height: 28px;
     background: #0f0f12;
     border-top: 1px solid var(--line);
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   .eliminated-label {
@@ -1174,6 +1237,9 @@ input.invalid:focus { border-color: var(--danger); }
     color: var(--danger);
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Winner */
@@ -1208,9 +1274,14 @@ input.invalid:focus { border-color: var(--danger); }
 
   .actions .btn {
     flex: 1;
+    min-width: 0;
     height: 32px;
     font-size: 11px;
-    padding: 0 8px;
+    padding: 0 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
   }
 
   /* CLI Panel Mobile */

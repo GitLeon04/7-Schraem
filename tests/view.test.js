@@ -103,11 +103,12 @@ describe('renderPlayerCard', () => {
     assert.match(html, /data-action="subtract"[^>]*disabled/);
   });
 
-  test('remove button only when round is not settled', () => {
+  test('pause button only when round is not settled and remove button is absent', () => {
     let s = gameWith(['A', 'B']);
-    assert.ok(V.renderPlayerCard(s.players[0], s).includes('data-action="remove"'));
+    assert.ok(V.renderPlayerCard(s.players[0], s).includes('data-action="toggle-pause"'));
+    assert.ok(!V.renderPlayerCard(s.players[0], s).includes('data-action="remove"'));
     s = must(G.subtractLife(s, id(s, 'A'), 7));
-    assert.ok(!V.renderPlayerCard(s.players[1], s).includes('data-action="remove"'));
+    assert.ok(!V.renderPlayerCard(s.players[1], s).includes('data-action="toggle-pause"'));
   });
 
   test('shows formatted balance with sign', () => {

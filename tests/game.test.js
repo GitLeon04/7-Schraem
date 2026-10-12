@@ -301,6 +301,76 @@ describe('removePlayer', () => {
 });
 
 /* ------------------------------------------------------------------
+   togglePausePlayer
+------------------------------------------------------------------ */
+describe('togglePausePlayer', () => {
+  test('pausing toggles paused state and keeps existing balance', () => {
+    let s = gameWith(['A', 'B', 'C'], 200);
+    const pA = idOf(s, 'A');
+    G.getPlayer(s, pA).balanceCents = 300; // prior balance
+    const res = G.togglePausePlayer(s, pA);
+    s = must(res);
+    assert.equal(G.getPlayer(s, pA).paused, true);
+    assert.equal(G.getPlayer(s, pA).balanceCents, 300);
+    assert.ok(res.events.some(e => e.type === 'player-paused'));
+  });
+
+  test('paused player does not pay bet when another player wins', () => {
+    let s = gameWith(['A', 'B', 'C'], 200);
+    const pA = idOf(s, 'A');
+    const pB = idOf(s, 'B');
+    const pC = idOf(s, 'C');
+    G.getPlayer(s, pA).balanceCents = 500;
+    G.getPlayer(s, pB).balanceCents = -200;
+    G.getPlayer(s, pC).balanceCents = -300;
+
+    // Pause player A
+    s = must(G.togglePausePlayer(s, pA));
+    assert.equal(G.getPotCents(s), 200); // 2 participating: (2 - 1) * 200 = 200
+
+    // B loses all lives, C wins
+    s = must(G.subtractLife(s, pB, 7));
+    assert.ok(s.round.settlement);
+    assert.equal(s.round.settlement.winnerId, pC);
+    assert.equal(s.round.settlement.potCents, 200);
+
+    // Paused player A paid 0
+    assert.equal(G.getPlayer(s, pA).balanceCents, 500);
+    // B paid 200
+    assert.equal(G.getPlayer(s, pB).balanceCents, -400);
+    // C won 200
+    assert.equal(G.getPlayer(s, pC).balanceCents, -100);
+
+    // Invariant: sum of all balances is exactly 0
+    const sum = s.players.reduce((acc, p) => acc + p.balanceCents, 0);
+    assert.equal(sum, 0);
+  });
+
+  test('unpausing restores player with 7 lives and active status', () => {
+    let s = gameWith(['A', 'B', 'C']);
+    const pA = idOf(s, 'A');
+    s = must(G.togglePausePlayer(s, pA));
+    assert.equal(G.getPlayer(s, pA).paused, true);
+
+    const res = G.togglePausePlayer(s, pA);
+    s = must(res);
+    assert.equal(G.getPlayer(s, pA).paused, false);
+    assert.equal(G.getPlayer(s, pA).lives, 7);
+    assert.equal(G.getPlayer(s, pA).eliminated, false);
+    assert.ok(res.events.some(e => e.type === 'player-unpaused'));
+  });
+
+  test('cannot toggle pause when round is already settled', () => {
+    let s = gameWith(['A', 'B'], 200);
+    s = must(G.subtractLife(s, idOf(s, 'A'), 7));
+    assert.ok(G.isRoundOver(s));
+    const res = G.togglePausePlayer(s, idOf(s, 'B'));
+    assert.equal(res.ok, false);
+    assert.equal(res.error, 'round-over');
+  });
+});
+
+/* ------------------------------------------------------------------
    subtractLife
 ------------------------------------------------------------------ */
 describe('subtractLife', () => {

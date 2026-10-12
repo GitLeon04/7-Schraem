@@ -98,7 +98,7 @@
   }
 
   /* ----------------------------------------------------------------
-     Palantir Telemetry CLI Stream (Deko)
+     7 Schräm Telemetry CLI Stream (Deko)
   ---------------------------------------------------------------- */
   const cliLogs = [];
   const MAX_CLI_LINES = 60;
@@ -173,6 +173,14 @@
         break;
       case 'player-added':
         logCli('INIT', 'SYS::PLAYER_REGISTER -> target="' + nameOf(ev.playerId) + '"', 'lives=' + G.MAX_LIVES);
+        break;
+      case 'player-paused':
+        logCli('WARN', 'SYS::PLAYER_PAUSED -> target="' + nameOf(ev.playerId) + '"', 'round_exempt=TRUE');
+        toast(nameOf(ev.playerId) + ' pausiert diese Runde', 'info');
+        break;
+      case 'player-unpaused':
+        logCli('INIT', 'SYS::PLAYER_RESUMED -> target="' + nameOf(ev.playerId) + '"', 'lives=' + G.MAX_LIVES);
+        toast(nameOf(ev.playerId) + ' spielt wieder mit', 'success');
         break;
       case 'player-removed':
         logCli('WARN', 'SYS::PLAYER_DEREGISTER -> id=' + ev.playerId);
@@ -295,6 +303,18 @@
       case 'revive':
         apply(G.revivePlayer(state, id));
         break;
+      case 'toggle-pause': {
+        const p = G.getPlayer(state, id);
+        if (!p) break;
+        if (!p.paused) {
+          if (await confirmAction('Runde pausieren?', nameOf(id) + ' setzt diese Runde aus. Kontostand bleibt erhalten und es fällt kein Einsatz an.', 'Pausieren')) {
+            apply(G.togglePausePlayer(state, id));
+          }
+        } else {
+          apply(G.togglePausePlayer(state, id));
+        }
+        break;
+      }
       case 'remove':
         if (await confirmAction('Spieler entfernen?', nameOf(id) + ' wird aus dem Spiel entfernt. Der Kontostand geht verloren.', 'Entfernen')) {
           apply(G.removePlayer(state, id));
@@ -436,7 +456,7 @@
       }
     }
 
-    logCli('BOOT', 'KERNEL_INIT: Palantir Schraem-OS v2.4.9 (x86_64-palantir-linux-gnu)');
+    logCli('BOOT', 'KERNEL_INIT: 7 Schräm-OS v2.4.9 (x86_64-schraem-linux-gnu)');
     logCli('INIT', 'SUBSYSTEM_LEDGER: Zero-Sum Ledger mounted', 'checksum=0x7E01 sum=0¢');
     logCli('INIT', 'SUBSYSTEM_AUDIO: Psychoacoustic sound matrix online', '8_channels');
     logCli('INIT', 'SUBSYSTEM_STACK: LIFO elimination enforcement enabled');

@@ -53,7 +53,8 @@
       eliminated,
       livesBeforeElimination: eliminated && lbe !== null ? Math.min(G.MAX_LIVES, Math.max(1, lbe)) : null,
       balanceCents: toInt(raw.balanceCents, 0),
-      lastAction: typeof raw.lastAction === 'string' ? raw.lastAction : null
+      lastAction: typeof raw.lastAction === 'string' ? raw.lastAction : null,
+      paused: Boolean(raw.paused)
     };
   }
 

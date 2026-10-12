@@ -59,6 +59,13 @@
     const id = player.id;
     const dis = roundOver ? ' disabled' : '';
 
+    if (player.paused) {
+      return '<div class="controls controls-paused">' +
+        '<button type="button" class="btn btn-unpause" data-action="toggle-pause" data-id="' + id + '"' + dis + '>' +
+        '<span class="btn-icon" aria-hidden="true">▶</span> Wieder mitspielen' +
+        '</button></div>';
+    }
+
     if (player.eliminated) {
       if (G.canRevive(state, id)) {
         return '<div class="controls controls-revive">' +
@@ -85,6 +92,7 @@
   }
 
   function statusOf(player, state) {
+    if (player.paused) return { cls: 'is-paused', label: 'Pausiert' };
     const winner = G.getWinner(state);
     if (winner && winner.id === player.id) return { cls: 'is-winner', label: 'Sieger' };
     if (player.eliminated) return { cls: 'is-eliminated', label: 'Ausgeschieden' };
@@ -98,8 +106,13 @@
     const balanceCls = player.balanceCents > 0 ? 'pos' : player.balanceCents < 0 ? 'neg' : '';
 
     const roundOver = G.isRoundOver(state);
-    const remove = roundOver ? '' : '<button type="button" class="icon-btn" data-action="remove" data-id="' + player.id +
-      '" aria-label="' + escapeHtml(player.name) + ' entfernen" title="Spieler entfernen">×</button>';
+    const pauseToggle = roundOver ? '' : (
+      player.paused
+        ? '<button type="button" class="icon-btn icon-btn-pause" data-action="toggle-pause" data-id="' + player.id +
+            '" aria-label="' + escapeHtml(player.name) + ' wieder mitspielen lassen" title="Wieder mitspielen">▶</button>'
+        : '<button type="button" class="icon-btn icon-btn-pause" data-action="toggle-pause" data-id="' + player.id +
+            '" aria-label="' + escapeHtml(player.name) + ' diese Runde pausieren" title="Runde pausieren">⏸</button>'
+    );
 
     return '' +
       '<article class="card ' + status.cls + '" data-id="' + player.id + '">' +
@@ -107,12 +120,12 @@
           '<span class="card-index">' + pad2(index) + '</span>' +
           '<h3 class="player-name">' + escapeHtml(player.name) + '</h3>' +
           '<span class="card-status">' + status.label + '</span>' +
-          remove +
+          pauseToggle +
         '</header>' +
         '<div class="card-body">' +
-          '<div class="lives"><span class="lives-count">' + player.lives + '</span>' +
+          '<div class="lives"><span class="lives-count">' + (player.paused ? '—' : player.lives) + '</span>' +
             '<span class="lives-max">/' + G.MAX_LIVES + '</span></div>' +
-          renderPips(player.lives) +
+          renderPips(player.paused ? 0 : player.lives) +
           '<div class="balance"><span class="label">Konto</span>' +
             '<span class="balance-value ' + balanceCls + '">' +
             G.formatCents(player.balanceCents, { sign: true }) + '</span></div>' +
@@ -151,9 +164,10 @@
 
   function renderStats(state) {
     const alive = G.getAlivePlayers(state).length;
+    const participating = G.getParticipatingPlayers ? G.getParticipatingPlayers(state).length : state.players.filter(p => !p.paused).length;
     return stat('Runde', pad2(state.round.number)) +
       stat('Einsatz', G.formatCents(state.betCents)) +
-      stat('Im Spiel', alive + '/' + state.players.length) +
+      stat('Im Spiel', alive + '/' + participating) +
       stat('Pot', G.formatCents(G.getPotCents(state)));
   }
 
