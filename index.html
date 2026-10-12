@@ -19,17 +19,16 @@
         <span class="brand-mark" aria-hidden="true">7</span>
         <span class="brand-name">SCHRÄM</span>
       </a>
-      <span class="topbar-meta label" id="round-label">Runde 01</span>
+      <div class="topbar-actions">
+        <button type="button" id="open-log-button" class="btn btn-ghost btn-small log-btn" aria-label="Game Log öffnen">
+          <span class="btn-icon" aria-hidden="true">📜</span> <span class="log-btn-text">Log</span> <span id="log-count" class="badge">0</span>
+        </button>
+        <span class="topbar-meta label" id="round-label">Runde 01</span>
+      </div>
     </div>
   </header>
 
   <main class="page">
-
-    <!-- Hero -->
-    <section class="hero">
-      <span class="label">Life Tracker · v2</span>
-      <h1>Sieben Leben.<br><span class="muted">Ein Gewinner.</span></h1>
-    </section>
 
     <!-- 01 · Einsatz -->
     <form id="setup-form" class="panel" novalidate>
@@ -82,6 +81,11 @@
               <button type="button" class="chip preset-player" data-name="Ilkcross">Ilkcross</button>
               <button type="button" class="chip preset-player" data-name="Tolj">Tolj</button>
               <button type="button" class="chip preset-player" data-name="Titan">Titan</button>
+              <button type="button" class="chip preset-player" data-name="Marlon">Marlon</button>
+              <button type="button" class="chip preset-player" data-name="Sören">Sören</button>
+              <button type="button" class="chip preset-player" data-name="Marco">Marco</button>
+              <button type="button" class="chip preset-player" data-name="Patrick">Patrick</button>
+              <button type="button" class="chip preset-player" data-name="Prägi">Prägi</button>
             </div>
           </div>
         </div>
@@ -128,6 +132,21 @@
         <button type="submit" value="ok" id="confirm-ok" class="btn btn-primary">Bestätigen</button>
       </div>
     </form>
+  </dialog>
+
+  <!-- Game Log Dialog / Drawer -->
+  <dialog id="log-dialog" class="drawer">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <span class="label">Protokoll &amp; Time Travel</span>
+        <h2 id="log-dialog-title">Game Log</h2>
+      </div>
+      <button type="button" id="close-log-button" class="icon-btn close-drawer-btn" aria-label="Game Log schließen">×</button>
+    </div>
+    <div class="drawer-meta-bar">
+      <span class="label" id="log-status-text">Lückenlose Aufzeichnung aller Aktionen</span>
+    </div>
+    <div id="log-entries" class="drawer-content" role="feed" aria-live="polite"></div>
   </dialog>
 
   <script src="js/game.js"></script>

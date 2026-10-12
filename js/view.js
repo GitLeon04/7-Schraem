@@ -54,15 +54,21 @@
     return '<div class="pips" aria-hidden="true">' + html + '</div>';
   }
 
-  function renderControls(player, roundOver) {
+  function renderControls(player, state) {
+    const roundOver = G.isRoundOver(state);
     const id = player.id;
     const dis = roundOver ? ' disabled' : '';
 
     if (player.eliminated) {
-      return '<div class="controls controls-revive">' +
-        '<button type="button" class="btn btn-revive" data-action="revive" data-id="' + id + '">' +
-        '<span class="btn-icon" aria-hidden="true">↺</span> Revive' +
-        '</button></div>';
+      if (G.canRevive(state, id)) {
+        return '<div class="controls controls-revive">' +
+          '<button type="button" class="btn btn-revive" data-action="revive" data-id="' + id + '">' +
+          '<span class="btn-icon" aria-hidden="true">↺</span> Revive' +
+          '</button></div>';
+      }
+      return '<div class="controls controls-eliminated">' +
+        '<span class="eliminated-label">Ausgeschieden</span>' +
+        '</div>';
     }
 
     let html = '<div class="controls">';
@@ -87,13 +93,12 @@
   }
 
   function renderPlayerCard(player, state) {
-    const roundOver = G.isRoundOver(state);
     const status = statusOf(player, state);
     const index = state.players.findIndex(p => p.id === player.id) + 1;
     const balanceCls = player.balanceCents > 0 ? 'pos' : player.balanceCents < 0 ? 'neg' : '';
 
-    const remove = roundOver ? '' :
-      '<button type="button" class="icon-btn" data-action="remove" data-id="' + player.id +
+    const roundOver = G.isRoundOver(state);
+    const remove = roundOver ? '' : '<button type="button" class="icon-btn" data-action="remove" data-id="' + player.id +
       '" aria-label="' + escapeHtml(player.name) + ' entfernen" title="Spieler entfernen">×</button>';
 
     return '' +
@@ -112,7 +117,7 @@
             '<span class="balance-value ' + balanceCls + '">' +
             G.formatCents(player.balanceCents, { sign: true }) + '</span></div>' +
         '</div>' +
-        renderControls(player, roundOver) +
+        renderControls(player, state) +
       '</article>';
   }
 
@@ -152,9 +157,67 @@
       stat('Pot', G.formatCents(G.getPotCents(state)));
   }
 
+  /* ----------------------------------------------------------------
+     Game Log / Verlauf
+  ---------------------------------------------------------------- */
+  function formatRelativeTime(ts) {
+    const sec = Math.max(0, Math.round((Date.now() - ts) / 1000));
+    if (sec < 5) return 'gerade eben';
+    if (sec < 60) return 'vor ' + sec + ' Sek.';
+    const min = Math.floor(sec / 60);
+    if (min < 60) return 'vor ' + min + ' Min.';
+    const h = Math.floor(min / 60);
+    return 'vor ' + h + ' Std.';
+  }
+
+  function renderHistoryLog(state) {
+    const list = Array.isArray(state.history) ? state.history.slice().reverse() : [];
+    if (list.length === 0) {
+      return '<div class="empty-log"><span class="label">Noch keine Aktionen</span><p>Jeder Klick wird hier lückenlos protokolliert.</p></div>';
+    }
+
+    let html = '';
+    const latestId = list[0] ? list[0].id : null;
+
+    for (const item of list) {
+      const isLatest = item.id === latestId;
+      const d = new Date(item.timestamp);
+      const timeStr = pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+
+      let chips = '';
+      if (Array.isArray(item.summary)) {
+        chips = item.summary.map(s => {
+          const bal = G.formatCents(s.balanceCents, { sign: true });
+          const statusCls = s.eliminated ? 'chip-dead' : (s.lives === 1 ? 'chip-warn' : '');
+          return '<span class="history-chip ' + statusCls + '">' +
+            escapeHtml(s.name) + ': ' + (s.eliminated ? '☠' : s.lives + '❤') + ' (' + bal + ')' +
+          '</span>';
+        }).join('');
+      }
+
+      const restoreBtn = isLatest
+        ? '<span class="history-badge-current">Aktueller Stand</span>'
+        : '<button type="button" class="btn btn-small btn-ghost history-restore-btn" data-action="restore" data-history-id="' + item.id + '">' +
+            '↺ Wiederherstellen' +
+          '</button>';
+
+      html += '' +
+        '<article class="history-entry" data-id="' + item.id + '">' +
+          '<div class="history-head">' +
+            '<span class="history-step">#' + pad2(item.id) + '</span>' +
+            '<span class="history-meta">' + timeStr + ' · ' + formatRelativeTime(item.timestamp) + ' · R' + pad2(item.round) + '</span>' +
+            restoreBtn +
+          '</div>' +
+          '<div class="history-text">' + escapeHtml(item.text) + '</div>' +
+          (chips ? '<div class="history-chips">' + chips + '</div>' : '') +
+        '</article>';
+    }
+    return html;
+  }
+
   return Object.freeze({
     escapeHtml, errorMessage,
-    renderPlayerCard, renderPlayers, renderWinner, renderStats
+    renderPlayerCard, renderPlayers, renderWinner, renderStats, renderHistoryLog
   });
 });
 

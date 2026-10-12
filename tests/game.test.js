@@ -555,13 +555,32 @@ describe('revivePlayer', () => {
     assert.equal(G.getPlayer(s, idOf(s, 'B')).balanceCents, 200);
   });
 
-  test('reviving an earlier-eliminated player also reopens a settled round', () => {
+  test('only the last eliminated player can be revived in the current round', () => {
     let s = gameWith(['A', 'B', 'C']);
     s = must(kill(s, 'A'));
     s = must(kill(s, 'B'));
-    s = must(G.revivePlayer(s, idOf(s, 'A')));
+    // A was not the last eliminated, so reviving A fails
+    const failA = G.revivePlayer(s, idOf(s, 'A'));
+    assert.equal(failA.ok, false);
+    assert.equal(failA.error, 'not-last-eliminated');
+
+    // Reviving B (last eliminated) succeeds and reopens round
+    s = must(G.revivePlayer(s, idOf(s, 'B')));
     assert.equal(s.round.settlement, null);
     assert.equal(G.getAlivePlayers(s).length, 2);
+
+    // Now that B is alive, A is at top of stack and can be revived
+    s = must(G.revivePlayer(s, idOf(s, 'A')));
+    assert.equal(G.getAlivePlayers(s).length, 3);
+  });
+
+  test('revive is strictly impossible across round transitions', () => {
+    let s = gameWith(['A', 'B']);
+    s = must(kill(s, 'A'));
+    s = must(G.nextRound(s));
+    assert.equal(G.canRevive(s, idOf(s, 'A')), false);
+    const r = G.revivePlayer(s, idOf(s, 'A'));
+    assert.equal(r.ok, false);
   });
 
   test('game continues correctly after revive and pays out once', () => {
@@ -706,6 +725,58 @@ describe('pickDeathSound', () => {
   test('avoids repeating the previous sound when possible', () => {
     const first = G.DEATH_SOUNDS[0];
     assert.notEqual(G.pickDeathSound(() => 0, first), first);
+  });
+});
+
+/* ------------------------------------------------------------------
+   History & Time Travel
+------------------------------------------------------------------ */
+describe('history & restoreHistory', () => {
+  test('logs every action in text form with player summary snapshot', () => {
+    let s = gameWith(['Flaschko', 'Eckmann']);
+    assert.ok(s.history.length >= 3); // setBet, add Flaschko, add Eckmann
+    assert.equal(s.history[0].type, 'set-bet');
+    assert.equal(s.history[1].type, 'add-player');
+    assert.equal(s.history[2].type, 'add-player');
+
+    s = must(G.subtractLife(s, idOf(s, 'Flaschko'), 2));
+    const last = s.history[s.history.length - 1];
+    assert.equal(last.type, 'subtract');
+    assert.match(last.text, /Flaschko: −2 Leben/);
+    assert.ok(Array.isArray(last.summary));
+    assert.equal(last.summary.find(p => p.name === 'Flaschko').lives, 5);
+  });
+
+  test('restoreHistory rolls back exact game state while preserving log', () => {
+    let s = gameWith(['Flaschko', 'Eckmann']);
+    s = must(G.subtractLife(s, idOf(s, 'Flaschko'), 3));
+    const checkpointId = s.history[s.history.length - 1].id;
+    assert.equal(G.getPlayer(s, idOf(s, 'Flaschko')).lives, 4);
+
+    // Weiter spielen: Flaschko verliert noch ein Leben
+    s = must(G.subtractLife(s, idOf(s, 'Flaschko'), 2));
+    assert.equal(G.getPlayer(s, idOf(s, 'Flaschko')).lives, 2);
+
+    // Zeitreise zurück zum Checkpoint
+    const restored = must(G.restoreHistory(s, checkpointId));
+    assert.equal(G.getPlayer(restored, idOf(restored, 'Flaschko')).lives, 4);
+    // Audit-Log hat den Restore-Eintrag angehängt
+    const latestLog = restored.history[restored.history.length - 1];
+    assert.equal(latestLog.type, 'restore');
+    assert.match(latestLog.text, /Stand wiederhergestellt/);
+  });
+
+  test('restoreHistory handles invalid id gracefully', () => {
+    const s = gameWith(['A', 'B']);
+    const r = G.restoreHistory(s, 9999);
+    assert.equal(r.ok, false);
+    assert.equal(r.error, 'entry-not-found');
+  });
+
+  test('new preset names are included', () => {
+    for (const name of ['Marlon', 'Sören', 'Marco', 'Patrick', 'Prägi']) {
+      assert.ok(G.PRESET_NAMES.includes(name), `Expected ${name} in PRESET_NAMES`);
+    }
   });
 });
 

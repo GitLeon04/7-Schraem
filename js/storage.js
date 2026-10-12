@@ -93,6 +93,14 @@
 
     const maxId = players.reduce((m, p) => Math.max(m, p.id), 0);
     const round = isObj(raw.round) ? raw.round : {};
+    const lastEliminatedId = Number.isInteger(round.lastEliminatedId) && players.some(p => p.id === round.lastEliminatedId)
+      ? round.lastEliminatedId
+      : null;
+    const eliminationStack = Array.isArray(round.eliminationStack)
+      ? round.eliminationStack.filter(id => players.some(p => p.id === id))
+      : (lastEliminatedId ? [lastEliminatedId] : []);
+
+    const history = Array.isArray(raw.history) ? raw.history.slice(-200) : [];
 
     return {
       version: G.STATE_VERSION,
@@ -102,8 +110,11 @@
       nextId: Math.max(toInt(raw.nextId, 1), maxId + 1),
       round: {
         number: Math.max(1, toInt(round.number, 1)),
-        settlement: sanitizeSettlement(round.settlement, players)
-      }
+        settlement: sanitizeSettlement(round.settlement, players),
+        lastEliminatedId,
+        eliminationStack
+      },
+      history
     };
   }
 
@@ -125,7 +136,8 @@
         lives,
         eliminated: lives === 0,
         balanceCents: typeof lp.balance === 'number' ? Math.round(lp.balance * 100) : 0,
-        lastAction: lp.lastAction
+        lastAction: lp.lastAction,
+        livesBeforeElimination: lives === 0 ? 1 : null
       });
     }
 
@@ -136,6 +148,13 @@
       nextId: id,
       round: { number: 1, settlement: null }
     });
+
+    const eliminated = state.players.filter(p => p.eliminated);
+    if (eliminated.length > 0) {
+      const lastElim = eliminated[eliminated.length - 1];
+      state.round.lastEliminatedId = lastElim.id;
+      state.round.eliminationStack = eliminated.map(p => p.id);
+    }
 
     // v1 hat eine beendete Runde bereits ausgezahlt -> als (rückgängig machbare) Abrechnung abbilden
     const alive = state.players.filter(p => !p.eliminated);

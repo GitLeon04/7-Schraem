@@ -19,7 +19,10 @@
   const MAX_BET_CENTS     = 100000; // 1.000 €
   const MAX_NAME_LENGTH   = 32;
 
-  const PRESET_NAMES = Object.freeze(['Flaschko', 'Eckmann', 'Ansgar', 'Ilkcross', 'Tolj', 'Titan']);
+  const PRESET_NAMES = Object.freeze([
+    'Flaschko', 'Eckmann', 'Ansgar', 'Ilkcross', 'Tolj', 'Titan',
+    'Marlon', 'Sören', 'Marco', 'Patrick', 'Prägi'
+  ]);
 
   const DEATH_SOUNDS = Object.freeze([
     'sounds/vine-boom.mp3',
@@ -56,6 +59,46 @@
   }
 
   /* ----------------------------------------------------------------
+     History & Protokollierung
+  ---------------------------------------------------------------- */
+  function formatPlayerSummary(players) {
+    return players.map(p => ({
+      id: p.id,
+      name: p.name,
+      lives: p.lives,
+      balanceCents: p.balanceCents,
+      eliminated: p.eliminated
+    }));
+  }
+
+  function addHistory(state, type, text) {
+    if (!Array.isArray(state.history)) state.history = [];
+    const id = state.history.length + 1;
+    const now = Date.now();
+    const snap = {
+      version: state.version,
+      betCents: state.betCents,
+      betConfirmed: state.betConfirmed,
+      players: clone(state.players),
+      nextId: state.nextId,
+      round: clone(state.round)
+    };
+    state.history.push({
+      id,
+      timestamp: now,
+      round: state.round ? state.round.number : 1,
+      type,
+      text,
+      summary: formatPlayerSummary(state.players),
+      snapshot: snap
+    });
+    if (state.history.length > 200) {
+      state.history.shift();
+    }
+    return state;
+  }
+
+  /* ----------------------------------------------------------------
      State
   ---------------------------------------------------------------- */
   function createInitialState() {
@@ -65,7 +108,8 @@
       betConfirmed: false,
       players: [],
       nextId: 1,
-      round: { number: 1, settlement: null }
+      round: { number: 1, settlement: null, lastEliminatedId: null, eliminationStack: [] },
+      history: []
     };
   }
 
@@ -104,6 +148,7 @@
     const next = clone(state);
     next.betCents = cents;
     next.betConfirmed = true;
+    addHistory(next, 'set-bet', 'Einsatz auf ' + formatCents(cents) + ' festgelegt');
     return ok(next);
   }
 
@@ -169,7 +214,9 @@
 
   function canRevive(state, id) {
     const p = getPlayer(state, id);
-    return !!p && p.eliminated;
+    if (!p || !p.eliminated) return false;
+    if (!state.round) return false;
+    return state.round.lastEliminatedId === id;
   }
 
   /* ----------------------------------------------------------------
@@ -212,7 +259,7 @@
   }
 
   /* ----------------------------------------------------------------
-     Spieler verwalten
+     Spieler verwalten (mitten in der Runde und zwischen Runden)
   ---------------------------------------------------------------- */
   function addPlayer(state, rawName) {
     if (!state.betConfirmed) return fail(state, 'bet-not-set');
@@ -231,19 +278,35 @@
       lastAction: null
     });
     next.nextId += 1;
+    addHistory(next, 'add-player', v.name + ' hinzugefügt (7 Leben)');
     return ok(next, [{ type: 'player-added', playerId: next.nextId - 1 }]);
   }
 
   function removePlayer(state, id) {
-    if (!getPlayer(state, id)) return fail(state, 'not-found');
+    const p = getPlayer(state, id);
+    if (!p) return fail(state, 'not-found');
     if (isRoundOver(state)) return fail(state, 'round-over');
 
     const next = clone(state);
     const events = [{ type: 'player-removed', playerId: id }];
-    next.players = next.players.filter(p => p.id !== id);
+    const pName = p.name;
+    next.players = next.players.filter(item => item.id !== id);
 
-    // Nur abrechnen, wenn in dieser Runde tatsächlich jemand ausgeschieden ist
-    if (next.players.some(p => p.eliminated)) settleIfWinner(next, events);
+    // Aus dem EliminationStack entfernen falls vorhanden
+    if (next.round && Array.isArray(next.round.eliminationStack)) {
+      next.round.eliminationStack = next.round.eliminationStack.filter(x => x !== id);
+      next.round.lastEliminatedId = next.round.eliminationStack.length > 0
+        ? next.round.eliminationStack[next.round.eliminationStack.length - 1]
+        : null;
+    }
+
+    // Wenn die Runde noch nicht abgerechnet war und jetzt genau 1 Überlebender übrig ist
+    if (!isRoundOver(next)) {
+      if (next.players.some(item => item.eliminated)) {
+        settleIfWinner(next, events);
+      }
+    }
+    addHistory(next, 'remove-player', pName + ' entfernt');
     return ok(next, events);
   }
 
@@ -269,8 +332,20 @@
     if (p.lives === 0) {
       p.eliminated = true;
       p.livesBeforeElimination = before;
+      if (!Array.isArray(next.round.eliminationStack)) next.round.eliminationStack = [];
+      next.round.eliminationStack.push(p.id);
+      next.round.lastEliminatedId = p.id;
+
       events.push({ type: 'eliminated', playerId: p.id });
       settleIfWinner(next, events);
+
+      const winner = getWinner(next);
+      const logText = winner
+        ? p.name + ': −' + amount + ' Leben → ' + winner.name + ' gewinnt Runde ' + next.round.number + ' (' + formatCents(next.round.settlement.potCents) + ') 🏆'
+        : p.name + ': −' + amount + ' Leben → Ausgeschieden ☠️';
+      addHistory(next, 'subtract', logText);
+    } else {
+      addHistory(next, 'subtract', p.name + ': −' + amount + ' Leben (' + p.lives + ' übrig)');
     }
     return ok(next, events);
   }
@@ -286,11 +361,12 @@
     const p = getPlayer(next, id);
     p.lives += 1;
     p.lastAction = '+1';
+    addHistory(next, 'add', p.name + ': +1 Leben (' + p.lives + ' übrig)');
     return ok(next);
   }
 
   /**
-   * Holt einen versehentlich eliminierten Spieler zurück.
+   * Holt den ZULETZT eliminierten Spieler der aktuellen Runde zurück.
    * Stellt die Leben vor dem tödlichen Abzug wieder her und macht – falls
    * dadurch eine Runde beendet wurde – die Auszahlung rückgängig.
    */
@@ -298,6 +374,7 @@
     const player = getPlayer(state, id);
     if (!player) return fail(state, 'not-found');
     if (!player.eliminated) return fail(state, 'not-eliminated');
+    if (!canRevive(state, id)) return fail(state, 'not-last-eliminated');
 
     const next = clone(state);
     const events = [];
@@ -311,7 +388,18 @@
     p.eliminated = false;
     p.livesBeforeElimination = null;
     p.lastAction = 'revive';
+
+    if (Array.isArray(next.round.eliminationStack)) {
+      next.round.eliminationStack = next.round.eliminationStack.filter(x => x !== id);
+      next.round.lastEliminatedId = next.round.eliminationStack.length > 0
+        ? next.round.eliminationStack[next.round.eliminationStack.length - 1]
+        : null;
+    } else {
+      next.round.lastEliminatedId = null;
+    }
+
     events.push({ type: 'revived', playerId: id, lives });
+    addHistory(next, 'revive', p.name + ': Revive (' + lives + ' Leben wiederhergestellt) ↺');
     return ok(next, events);
   }
 
@@ -327,8 +415,33 @@
       p.livesBeforeElimination = null;
       p.lastAction = null;
     }
-    next.round = { number: state.round.number + 1, settlement: null };
+    next.round = {
+      number: state.round.number + 1,
+      settlement: null,
+      lastEliminatedId: null,
+      eliminationStack: []
+    };
+    addHistory(next, 'next-round', 'Runde ' + next.round.number + ' gestartet');
     return ok(next, [{ type: 'round-started', round: next.round.number }]);
+  }
+
+  /* ----------------------------------------------------------------
+     History / Time Travel
+  ---------------------------------------------------------------- */
+  function restoreHistory(state, historyId) {
+    if (!state.history || !Array.isArray(state.history)) return fail(state, 'no-history');
+    const entry = state.history.find(h => h.id === historyId);
+    if (!entry || !entry.snapshot) return fail(state, 'entry-not-found');
+
+    const snap = clone(entry.snapshot);
+    const next = {
+      ...snap,
+      history: clone(state.history)
+    };
+
+    const text = 'Stand wiederhergestellt zu Schritt #' + entry.id + ' (' + entry.text + ')';
+    addHistory(next, 'restore', text);
+    return ok(next, [{ type: 'restored', historyId, text }]);
   }
 
   /* ----------------------------------------------------------------
@@ -375,6 +488,7 @@
     getPlayer, getAlivePlayers, isRoundOver, getWinner, getPotCents,
     getSortedPlayers, getLedger, canRevive,
     addPlayer, removePlayer, subtractLife, addLife, revivePlayer, nextRound,
+    restoreHistory,
     formatCents, formatBetInput, pickDeathSound
   });
 });

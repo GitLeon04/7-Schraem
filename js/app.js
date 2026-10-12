@@ -144,6 +144,16 @@
     $('reset-button').hidden = !any && !betSet;
 
     $('round-label').textContent = 'Runde ' + String(state.round.number).padStart(2, '0');
+
+    const logCountEl = $('log-count');
+    if (logCountEl) {
+      logCountEl.textContent = Array.isArray(state.history) ? state.history.length : 0;
+    }
+    const logDlg = $('log-dialog');
+    if (logDlg && logDlg.open) {
+      const logEntries = $('log-entries');
+      if (logEntries) logEntries.innerHTML = V.renderHistoryLog(state);
+    }
   }
 
   /* ----------------------------------------------------------------
@@ -236,6 +246,9 @@
     markInvalid($('global-bet'), false);
     markInvalid($('player-name'), false);
     editingBet = false;
+    $('player-ui').hidden = false;
+    $('toggle-player-ui').setAttribute('aria-expanded', 'true');
+    $('toggle-player-ui').querySelector('.toggle-label').textContent = 'Ausblenden';
     render();
     toast('Zurückgesetzt', 'info');
   }
@@ -245,6 +258,47 @@
     box.hidden = !box.hidden;
     $('toggle-player-ui').setAttribute('aria-expanded', String(!box.hidden));
     $('toggle-player-ui').querySelector('.toggle-label').textContent = box.hidden ? 'Einblenden' : 'Ausblenden';
+  }
+
+  function onOpenLog() {
+    const dlg = $('log-dialog');
+    if (!dlg) return;
+    const entries = $('log-entries');
+    if (entries) entries.innerHTML = V.renderHistoryLog(state);
+    if (typeof dlg.showModal === 'function') {
+      dlg.showModal();
+    } else {
+      dlg.setAttribute('open', '');
+    }
+  }
+
+  function onCloseLog() {
+    const dlg = $('log-dialog');
+    if (!dlg) return;
+    if (typeof dlg.close === 'function') {
+      dlg.close();
+    } else {
+      dlg.removeAttribute('open');
+    }
+  }
+
+  async function onLogClick(e) {
+    const btn = e.target.closest('button[data-action="restore"]');
+    if (!btn || btn.disabled) return;
+    const histId = parseInt(btn.dataset.historyId, 10);
+    if (!histId) return;
+
+    const confirmed = await confirmAction(
+      'Spielstand wiederherstellen?',
+      'Möchtest du zu diesem Schritt (#' + histId + ') zurückkehren? Der aktuelle Stand wird im Protokoll gesichert.',
+      'Wiederherstellen'
+    );
+    if (confirmed) {
+      if (apply(G.restoreHistory(state, histId))) {
+        toast('Stand #' + histId + ' wiederhergestellt', 'success');
+        onCloseLog();
+      }
+    }
   }
 
   function loadLastDeploy() {
@@ -273,6 +327,13 @@
     $('reset-button').addEventListener('click', onReset);
     $('toggle-player-ui').addEventListener('click', onTogglePlayerUi);
 
+    $('open-log-button').addEventListener('click', onOpenLog);
+    $('close-log-button').addEventListener('click', onCloseLog);
+    $('log-entries').addEventListener('click', onLogClick);
+    $('log-dialog').addEventListener('click', e => {
+      if (e.target === $('log-dialog')) onCloseLog();
+    });
+
     $('global-bet').addEventListener('input', e => markInvalid(e.target, false));
     $('player-name').addEventListener('input', e => markInvalid(e.target, false));
     $('player-name').maxLength = G.MAX_NAME_LENGTH;
@@ -283,6 +344,11 @@
 
     // Migrierten / reparierten Stand direkt im neuen Format sichern
     S.saveState(storage, state);
+    if (state.players.length > 0) {
+      $('player-ui').hidden = true;
+      $('toggle-player-ui').setAttribute('aria-expanded', 'false');
+      $('toggle-player-ui').querySelector('.toggle-label').textContent = 'Einblenden';
+    }
     render();
     loadLastDeploy();
   }
